@@ -5,12 +5,10 @@ firmware for ESP32 devices of all sizes. One tree, many boards: the engine, the 
 the apps are shared, and each board under `boards/` supplies its hardware through one
 interface (`board/board.h`).
 
-> **Paths in this file.** This documents the ESP32 tree, which lives under `esp32/`. Local
-> dirs (`boards/`, `firmware/`, `host/`, `cmake/`) are relative to here. **Shared** code
-> (`components/`, `third_party/`, `documents/`, `assets/`, `docs/`, `tools/`) is at the repo
-> root, one level up (`../`). Run the ESP32 shell commands below from the `esp32/` directory,
-> or add an `esp32/` prefix as the top-level [README](../README.md) does. *(These paths have
-> not yet had a full monorepo pass; some may still need a `../` or `esp32/` adjustment.)*
+> **Paths in this file** are relative to `esp32/` (run shell commands from here). Local dirs
+> — `boards/`, `firmware/`, `host/`, `cmake/` — are bare; **shared** code at the repo root —
+> `components/`, `third_party/`, `documents/`, `assets/`, `docs/`, `tools/` — is reached with
+> `../`. The top-level [README](../README.md) shows the same commands from the repo root.
 
 New here, or an agent picking this up? Start with [AGENTS.md](../AGENTS.md): setup, the rules
 for each device, the architecture and the known traps.
@@ -33,19 +31,15 @@ for each device, the architecture and the known traps.
 | rcNet receiver (push `.rc` from a Mac or phone) | ✅ Verified with Origami2's `send.py`; mDNS `tab5.local` / `_rcnet._tcp`. |
 | BLE via the C6 (NimBLE + Hosted-HCI) | ✅ Scan and advertise beside Wi-Fi (`ble` console command). |
 | 2. Muse gadget support | ✅ `firmware/muse-gadget` pairs with the Muse app as `MuseGadget-Tab5-XXXXXX`; Muse pushes RC documents to it. |
-| 3. Muse ↔ RemoteCompose integration | 🟡 Device state as RC system/named variables, host actions, live start-up screen ([proposal](docs/RC_SYSTEM_VARIABLES.md)). |
+| 3. Muse ↔ RemoteCompose integration | 🟡 Device state as RC system/named variables, host actions, live start-up screen ([proposal](../docs/RC_SYSTEM_VARIABLES.md)). |
 
 ## Layout
 
+This tree (`esp32/`):
+
 ```
-components/          shared by every board
-  rccore/            CMake glue: builds rccore from ../remotecompose-experiments
-  thorvg/            CMake glue + config.h for vendored ThorVG (host and ESP-IDF)
-  kobentovg/          ThorvgPaintContext: the RemoteCompose PaintContext on ThorVG's rasterizer
-  rcstage/           one RC document live on the screen: player task, touch, banner,
-                     system/named variables, host actions, the device-state sampler
 boards/<board>/      one directory per board
-  components/board/  the board interface (board/board.h): display, touch, backlight, radio
+  components/board/  the board interface (board/board.h): display, touch, backlight, radio,
                      power, battery; the shared code's only way to the hardware
   components/...     the board's BSP and drivers
   sdkconfig.defaults chip, memory, console, radio wiring
@@ -53,17 +47,26 @@ boards/<board>/      one directory per board
   README.md          hardware notes
 firmware/rcplayer/   RC player app: embedded documents, serial console, Wi-Fi + rcNet
 firmware/muse-gadget/ the Muse Gadget SDK's app with an RC screen (components/muse_rc)
-documents/           the .rc documents both apps embed (muse_splash.rc is the start-up screen)
 cmake/board.cmake    board selection (-DBOARD=...), shared by the apps
 host/                macOS/Linux build of the same renderer: rc2png, plus the Skia reference build
-tools/               snap.py, peek.py, update-muse.sh, splash generator, compare/sweep scripts
-third_party/         ThorVG v1.0.7, with one local bug fix (see third_party/README.md)
-docs/                RC_SYSTEM_VARIABLES.md: battery/memory/network for RC documents (proposal)
-assets/fonts/        Roboto and Roboto Mono (Apache 2.0)
 ```
 
-Expected beside this repository: `../remotecompose-experiments` (rccore) and, for the Muse
-app, `../muse-gadget-sdk` on branch `tab5-p4-hosted`.
+Shared across targets, at the repo root (reached as `../`):
+
+```
+../components/rccore      CMake glue: builds rccore from the sibling remotecompose-experiments
+../components/thorvg      CMake glue + config.h for the vendored ThorVG fork (host and ESP-IDF)
+../components/kobentovg   ThorvgPaintContext: the RC PaintContext on ThorVG's rasterizer (KobentoVG)
+../components/rcstage     one RC document live on a screen: player task, touch, variables, actions
+../documents/            the .rc documents the apps embed (muse_splash.rc is the start-up screen)
+../third_party/thorvg    the ThorVG fork, with local patches (see ../PROVENANCE.md)
+../tools/                snap.py, peek.py, update-muse.sh, splash generator, compare/sweep scripts
+../docs/                 RC conventions under review (system variables, action patterns)
+../assets/fonts/         Roboto and Roboto Mono (Apache 2.0)
+```
+
+Expected beside the repository: `remotecompose-experiments` (rccore) and, for the Muse app,
+`muse-gadget-sdk` on branch `tab5-p4-hosted`.
 
 ## Adding a board
 
@@ -79,7 +82,7 @@ remotecompose-experiments `main`.
 ## Build and flash
 
 > **A Tab5 paired with Muse must not get this firmware.** rcplayer's app starts at 0x10000 and
-> overwrites the Muse NVS at 0x11000, which holds the pairing. Use `tools/update-muse.sh` there.
+> overwrites the Muse NVS at 0x11000, which holds the pairing. Use `../tools/update-muse.sh` there.
 
 ```sh
 . ~/esp/esp-idf-v6/export.sh
@@ -99,15 +102,15 @@ CONFIG_RCPLAYER_WIFI_PASSWORD="..."
 ## Talking to the device (no reset, no TTY needed)
 
 ```sh
-tools/snap.py out.png                 # screenshot of what is on the panel (360x640)
-tools/snap.py --cmd list              # embedded documents
-tools/snap.py --cmd "doc 3"           # Flappy Droid. Also: next, prev
-tools/snap.py --cmd "res half"        # render at 360x640 and let the PPA upscale (about 34 fps)
-tools/snap.py --cmd "wifi SSID PASS"  # store Wi-Fi credentials in NVS and connect
-tools/snap.py --cmd net               # Wi-Fi and rcNet status
-tools/snap.py --cmd scan              # list visible APs
-tools/snap.py --cmd bench             # raw raster throughput
-tools/peek.py /dev/cu.usbmodem31101 10   # passively read the log
+../tools/snap.py out.png                 # screenshot of what is on the panel (360x640)
+../tools/snap.py --cmd list              # embedded documents
+../tools/snap.py --cmd "doc 3"           # Flappy Droid. Also: next, prev
+../tools/snap.py --cmd "res half"        # render at 360x640 and let the PPA upscale (about 34 fps)
+../tools/snap.py --cmd "wifi SSID PASS"  # store Wi-Fi credentials in NVS and connect
+../tools/snap.py --cmd net               # Wi-Fi and rcNet status
+../tools/snap.py --cmd scan              # list visible APs
+../tools/snap.py --cmd bench             # raw raster throughput
+../tools/peek.py /dev/cu.usbmodem31101 10   # passively read the log
 ```
 
 On the device itself, a 1.5 s long-press switches to the next document.
@@ -130,20 +133,20 @@ through the new `gadget_ext.h` hooks (`components/muse_rc`):
 
 ```sh
 # Token: CONFIG_GADGET_SDK_TOKEN="mgst_..." in firmware/muse-gadget/sdkconfig.secrets (gitignored)
-tools/update-muse.sh [--board B]            # build + write the app only; pairing and Wi-Fi survive
-tools/snap.py --prefix '>' out.png          # screenshot; the SDK console takes '>' lines
-tools/snap.py --prefix '>' --cmd tap        # same as tapping the screen (confirms pairing)
-tools/snap.py --prefix '>' --cmd "show flappy"   # also: set NAME VALUE, banner TEXT, vars, stats
-tools/snap.py --prefix '>' --cmd sys        # device state; Tab5 also: "sys history", expander
+../tools/update-muse.sh [--board B]            # build + write the app only; pairing and Wi-Fi survive
+../tools/snap.py --prefix '>' out.png          # screenshot; the SDK console takes '>' lines
+../tools/snap.py --prefix '>' --cmd tap        # same as tapping the screen (confirms pairing)
+../tools/snap.py --prefix '>' --cmd "show flappy"   # also: set NAME VALUE, banner TEXT, vars, stats
+../tools/snap.py --prefix '>' --cmd sys        # device state; Tab5 also: "sys history", expander
 ```
 
-`tools/update-muse.sh` writes only the app partition (0x20000), so the pairing, device
+`../tools/update-muse.sh` writes only the app partition (0x20000), so the pairing, device
 credentials and BLE bonds in NVS survive every update. Avoid `idf.py erase-flash`; it wipes
 them, and the device must be paired again. A full `idf.py flash` is also safe: it doesn't
 touch NVS.
 
-The start-up screen is `muse_splash.rc`. `python3 tools/splash/make_splash.py` builds it
-from the traced Muse mark and `tools/splash/crane.svg` (Wikimedia's "Origami - Crane"). It is
+The start-up screen is `muse_splash.rc`. `python3 ../tools/splash/make_splash.py` builds it
+from the traced Muse mark and `../tools/splash/crane.svg` (Wikimedia's "Origami - Crane"). It is
 compiled with `json2rc.js` from [RemoteCompose-Examples](https://github.com/hoford/RemoteCompose-Examples),
 vendored in that directory.
 
@@ -162,8 +165,8 @@ SDK changes on the branch, all generic:
 ```sh
 cmake -S host -B host/build -G Ninja && ninja -C host/build
 host/build/rc2png doc.rc out.png --fit 360 640          # player mode: lays out to the surface
-tools/sweep_skia.sh DIR OUT 400   # same engine, Skia vs ThorVG; isolates backend bugs
-tools/sweep.sh DIR OUT 400        # vs the TS player; mixes in engine differences
+../tools/sweep_skia.sh DIR OUT 400   # same engine, Skia vs ThorVG; isolates backend bugs
+../tools/sweep.sh DIR OUT 400        # vs the TS player; mixes in engine differences
 ```
 
 ## Learnings

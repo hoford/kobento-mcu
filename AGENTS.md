@@ -31,14 +31,13 @@ owner to review, adjust and then propose upstream.
 
 ### Repository layout (read this before following paths below)
 
-Shared code is at the top level (`components/`, `third_party/`, `documents/`, `assets/`,
-`docs/`, `tools/`); the ESP32 tree lives under **`esp32/`** (`boards/`, `firmware/`, `host/`,
-`cmake/`) and the STM32 tree under **`stm32/`**. **Most instructions below were written for the
-ESP32 tree and use paths relative to `esp32/`** (e.g. `firmware/rcplayer`, `host/build/rc2png`,
-`boards/<board>`). Run them from `esp32/`, or prepend `esp32/`. Paths to shared dirs
-(`tools/`, `documents/`, `components/`) are repo-root-relative and unchanged. *(This guide has
-not yet had a full per-line path pass for the monorepo move — treat ESP32 paths as
-`esp32/`-relative.)*
+Paths in this guide are relative to the **repo root**. Shared code is at the top level
+(`components/`, `third_party/`, `documents/`, `assets/`, `docs/`, `tools/`); the ESP32 tree is
+under **`esp32/`** (`esp32/boards/`, `esp32/firmware/`, `esp32/host/`, `esp32/cmake/`) and the
+STM32 tree under **`stm32/`**. So ESP32 paths carry an `esp32/` prefix and shared paths are
+bare. A few board-level BSP paths (`esp32/boards/<b>/components/...`) and the Muse component
+(`esp32/firmware/muse-gadget/components/muse_rc`) live inside the ESP32 tree, not in top-level
+`components/`.
 
 ## Sibling repositories (expected next to this one)
 
@@ -55,8 +54,8 @@ not yet had a full per-line path pass for the monorepo move — treat ESP32 path
 - The IDF Python, which has esptool and pyserial, is at
   `~/.espressif/python_env/idf6.0_py3.14_env/bin/python`.
 - The shell is zsh: quote arrays as `"${arr[@]}"`, and use `$=var` for word splitting.
-- The host renderer is built with `cmake -S host -B host/build -G Ninja && ninja -C host/build`.
-  - Run it as `host/build/rc2png in.rc out.png --fit W H --density D`.
+- The host renderer is built with `cmake -S esp32/host -B esp32/host/build -G Ninja && ninja -C esp32/host/build`.
+  - Run it as `esp32/host/build/rc2png in.rc out.png --fit W H --density D`.
   - `--named NAME=VALUE` and `--sys ID=VALUE` fill in variables.
   - `--click X,Y` (dp) runs a tap and prints the host actions it raises. This is the fastest
     way to test a document's buttons without hardware.
@@ -64,17 +63,17 @@ not yet had a full per-line path pass for the monorepo move — treat ESP32 path
 ## Build, flash, talk
 
 ```sh
-cd firmware/rcplayer
-idf.py -B build/<board> -DBOARD=<board> build          # <board> = a directory under boards/
+cd esp32/firmware/rcplayer
+idf.py -B build/<board> -DBOARD=<board> build          # <board> = a directory under esp32/boards/
 idf.py -B build/<board> -DBOARD=<board> -p PORT app-flash   # app only: keeps NVS (saved Wi-Fi)
 ```
 
 - **Board selection:**
-  - `cmake/board.cmake` picks the board.
+  - `esp32/cmake/board.cmake` picks the board.
   - Each board gets its own build directory and its own sdkconfig, kept in the build
     directory.
   - The defaults are layered: board `sdkconfig.defaults`, then the app's, then
-    `boards/<b>/sdkconfig.<app>.defaults`, then the gitignored `<app>/sdkconfig.secrets`.
+    `esp32/boards/<b>/sdkconfig.<app>.defaults`, then the gitignored `<app>/sdkconfig.secrets`.
   - **After changing any sdkconfig.defaults, delete `build/<board>/sdkconfig`,** or the old
     values stay.
 - **Talking to a running device:** use `tools/snap.py` and `tools/peek.py`, not `idf.py
@@ -111,7 +110,7 @@ idf.py -B build/<board> -DBOARD=<board> -p PORT app-flash   # app only: keeps NV
   - Factory images are in `backups/` (gitignored); each board README says how to restore.
 - **Secrets:**
   - The Muse SDK token and the dev Wi-Fi credentials are in
-    `firmware/muse-gadget/sdkconfig.secrets` (gitignored). Never print the token, and never
+    `esp32/firmware/muse-gadget/sdkconfig.secrets` (gitignored). Never print the token, and never
     commit either.
   - The dev network, NIXIOT, is the owner's test network for IoT, Muse and RC devices: its
     password showing up in a log is not a concern.
@@ -148,7 +147,7 @@ idf.py -B build/<board> -DBOARD=<board> -p PORT app-flash   # app only: keeps NV
     It also sets the clock: SNTP (`CONFIG_RCSTAGE_NTP_SERVER`, pool.ntp.org) starts once
     Wi-Fi has an address, and the time zone is `CONFIG_RCSTAGE_TIMEZONE` (US Pacific). The
     SDK and rcplayer don't set the time themselves. The log says `clock set: ...`.
-- **`firmware/rcplayer/main/main.cpp`** owns the host side:
+- **`esp32/firmware/rcplayer/main/main.cpp`** owns the host side:
   - It handles the host actions `doc.show/next/back`, `system.backlight`, and
     `wifi.join/scan/page`.
   - It publishes the Wi-Fi list (`publishWifi`) and returns from the Wi-Fi screen after a
@@ -161,13 +160,13 @@ idf.py -B build/<board> -DBOARD=<board> -p PORT app-flash   # app only: keeps NV
   - It picks document variants: `<name>_round` on round boards and `<name>_light` on e-ink,
     wherever `<name>` is asked for. The long-press cycle shows each document once, in this
     board's variant (`otherScreen`).
-- **`firmware/rcplayer/main/net.cpp`** is the Wi-Fi manager.
+- **`esp32/firmware/rcplayer/main/net.cpp`** is the Wi-Fi manager.
   - It keeps up to 8 saved networks in NVS (namespace `wifi`, blob `nets`).
   - A `wifi_mgr` task works through an op queue. It auto-joins in this order: the last
     network (if seen), then networks with passwords, then open ones. It falls back after
     4 tries, and rescans every 30 s while unjoined.
   - `view()` is what the Wi-Fi screen shows, using states 1–7 (see make_wifi.py).
-- **`firmware/muse-gadget/components/muse_rc/muse_rc.cpp`** is the Muse player's host side.
+- **`esp32/firmware/muse-gadget/components/muse_rc/muse_rc.cpp`** is the Muse player's host side.
   - It has the same document actions and variants as rcplayer, and the same Wi-Fi screen
     rows, but the SDK does the Wi-Fi work:
     - it scans with `wifi_mgr_scan`;
@@ -201,7 +200,7 @@ idf.py -B build/<board> -DBOARD=<board> -p PORT app-flash   # app only: keeps NV
   - Trap (hit 2026-10-21): `config_setup_complete()` reads NVS, so the player task (PSRAM
     stack on the S3) mustn't call it; `sSetupDone` caches it from `gadget_ext_status`.
   - Open networks and saved ones can be joined; there's no on-device password entry.
-- **`firmware/muse-gadget/components/muse_rc/commands.cpp`** holds the Muse commands
+- **`esp32/firmware/muse-gadget/components/muse_rc/commands.cpp`** holds the Muse commands
   (`rc.*`, `device.time/beep/motion`, `display.refresh`, and the `device.health` extras
   through the SDK hook `gadget_ext_health`).
   - **`docs/MUSE_COMMANDS.md` documents every one: keep it in step with the code.**
@@ -244,7 +243,7 @@ idf.py -B build/<board> -DBOARD=<board> -p PORT app-flash   # app only: keeps NV
 1. **Capture it:** on the Muse build, `tools/getdoc.py out.rc` saves the document being
    shown (console `>doc`). The log also records each `rc.show_url` with its URL.
 2. **Render it off the device:**
-   - `host/build/rc2png out.rc a.png --fit 720 1280 --density 2` draws it at Tab5 scale.
+   - `esp32/host/build/rc2png out.rc a.png --fit 720 1280 --density 2` draws it at Tab5 scale.
    - The desktop viewer, `../remotecompose-experiments/players/cpp/build/apps/viewer/rcviewer
      --screenshot out.rc b.png 720 1280`, draws at density 1.
    - Both use the boards' engine (rccore), so agreement means the player is consistent, not
@@ -258,7 +257,7 @@ idf.py -B build/<board> -DBOARD=<board> -p PORT app-flash   # app only: keeps NV
 
 The boards draw with ThorVG; the desktop players with Skia (`../remotecompose-experiments/
 players/cpp/lib/rcskia`). Colour filters (SkColorFilters::Blend semantics, every blend mode)
-and JPEG images work since 2026-10-19; `host/build/paintcheck out.png [photo.jpg]` checks
+and JPEG images work since 2026-10-19; `esp32/host/build/paintcheck out.png [photo.jpg]` checks
 them pixel by pixel. Still missing or approximate: sweep gradients (a flat colour), runtime
 (AGSL) and bitmap shaders, Porter-Duff blend modes for drawing (SrcOver), inverse fills,
 path combining, meshes, text on a path (drawn straight), fonts beyond Roboto regular/bold/mono
@@ -278,7 +277,7 @@ every document before and after (`rc2png --time` for a fixed clock) and diff the
   thousands of small allocations fill internal RAM and Wi-Fi fails.
 - **PaperS3 (e-ink):**
   - The driver is ours. M5GFX's bus timing, power sequence and waveforms are ported into
-    `boards/m5stack_papers3/.../board.cpp`. The pins come from M5GFX; M5's docs page
+    `esp32/boards/m5stack_papers3/.../board.cpp`. The pins come from M5GFX; M5's docs page
     disagrees on PWR and OE.
   - It refreshes only changed pixels: about 0.5 s, about 18 frames.
   - The player never blocks on the panel: presentAsync converts and returns, and the newest
@@ -368,7 +367,7 @@ Known gaps against the Java reference (androidx `remote-core`), not fixed:
 - **Round board:** not reflashed since the Wi-Fi screen work; it will show the RC-only
   start-up screen.
 
-- **Waveshare ESP32-S3-Touch-AMOLED-1.8** (`boards/waveshare_s3_amoled18`, added 2026-10-19):
+- **Waveshare ESP32-S3-Touch-AMOLED-1.8** (`esp32/boards/waveshare_s3_amoled18`, added 2026-10-19):
   rcplayer runs (v1 board: SH8601 + FT3168, AXP2101), on NIXIOT as `amoled`. Touch works,
   orientation verified (identity); PWR (forward) and BOOT (back) work. Factory image in `backups/` (see its README).
 - **`device.sleep` (PaperS3, 2026-10-20):**
