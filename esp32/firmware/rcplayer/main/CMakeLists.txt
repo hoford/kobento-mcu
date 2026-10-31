@@ -7,22 +7,15 @@ file(GLOB DOCS ${RESCAN} ${CMAKE_CURRENT_LIST_DIR}/../../../../documents/*.rc)
 # scaled to the screen (rcstage::load fit).
 file(GLOB DOCS_FIT ${RESCAN} ${CMAKE_CURRENT_LIST_DIR}/../../../../documents/fit/*.rc)
 list(APPEND DOCS ${DOCS_FIT})
-# Screens that need this player behind them (the Wi-Fi list), last in the long-press cycle.
-file(GLOB DOCS_SYSTEM ${RESCAN} ${CMAKE_CURRENT_LIST_DIR}/../../../../documents/system/*.rc)
-list(APPEND DOCS ${DOCS_SYSTEM})
 # 3D documents only where the renderer draws 3D (CONFIG_KOBENTOVG_3D; off on the Core2).
 if(CONFIG_KOBENTOVG_3D)
     file(GLOB DOCS3D ${RESCAN} ${CMAKE_CURRENT_LIST_DIR}/../../../../documents/3d/*.rc)
     list(APPEND DOCS ${DOCS3D})
 endif()
 
-# A board that names its documents (CONFIG_RCPLAYER_DOCUMENTS) gets those, in that order.
-# documents/wide/ (layouts for wide strip screens) and documents/ha/ (Home Assistant pages)
-# are only embedded this way.
+# A board may name the documents it wants (CONFIG_RCPLAYER_DOCUMENTS, space-separated), in that
+# order; the first is shown at start. Empty: every document above.
 if(CONFIG_RCPLAYER_DOCUMENTS)
-    file(GLOB DOCS_WIDE ${RESCAN} ${CMAKE_CURRENT_LIST_DIR}/../../../../documents/wide/*.rc
-                                  ${CMAKE_CURRENT_LIST_DIR}/../../../../documents/ha/*.rc)
-    list(APPEND DOCS ${DOCS_WIDE})
     separate_arguments(_wanted UNIX_COMMAND "${CONFIG_RCPLAYER_DOCUMENTS}")
     set(_picked "")
     foreach(w ${_wanted})
@@ -57,12 +50,7 @@ foreach(doc ${DOCS})
 endforeach()
 file(WRITE ${DOC_TABLE} "#pragma once\n#include <cstdint>\n${_decl}struct EmbeddedDoc { const char* name; const uint8_t* start; const uint8_t* end; bool fit; };\nstatic const EmbeddedDoc kEmbeddedDocs[] = {\n${_rows}};\n")
 
-# A chip without its own radio reaches a co-processor through esp_hosted (the Tab5's C6).
-idf_build_get_property(target IDF_TARGET)
-if(target STREQUAL "esp32p4")
-    set(RADIO esp_hosted)
-endif()
-idf_component_register(SRCS main.cpp console.cpp net.cpp ble.cpp ha.cpp
+idf_component_register(SRCS main.cpp console.cpp
                        INCLUDE_DIRS . ${CMAKE_CURRENT_BINARY_DIR}
-                       REQUIRES rcstage board esp_timer mbedtls esp_wifi esp_netif esp_http_server esp_http_client nvs_flash bt ${RADIO}
+                       REQUIRES rcstage board esp_timer
                        EMBED_FILES ${DOCS})

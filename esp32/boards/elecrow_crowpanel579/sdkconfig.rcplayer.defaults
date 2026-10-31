@@ -1,13 +1,7 @@
 # The CrowPanel 5.79"'s settings for firmware/rcplayer (loaded after the app's own defaults).
-CONFIG_RCPLAYER_DEVICE_NAME="crowpanel"
-# All 80 IoT panels cycling three at a time, three of them fixed (tools/iot/make_iot_trio.py),
-# then three static
-# documents laid out for the 792 x 272 strip (tools/wide/make_wide.py); the
-# portrait and square ones don't fit this screen. The dial steps through them.
-CONFIG_RCPLAYER_DOCUMENTS="ha_thermostats iot_cycle iot_trio wide_welcome wide_forecast wide_agenda"
 # 8 MB of flash: the app and a smaller storage partition.
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_8mb.csv"
 # As on the other ESP32-S3 boards: every plain malloc/new in PSRAM (the engine makes
-# thousands of small ones), and a pool of internal RAM kept back for Wi-Fi, DMA and drivers.
+# thousands of small ones), and a pool of internal RAM kept back for DMA and drivers.
 CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=0
 CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=65536

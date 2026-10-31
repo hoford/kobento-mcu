@@ -3,51 +3,21 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
+#include <vector>
 
 #include "board/board.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
-#include "ble.h"
-#include "ha.h"
-#include "net.h"
 #include "rcstage/stage.h"
-#include <string>
-#include <vector>
 
 namespace console {
 
 static QueueHandle_t sQueue;
 
-// wifi add SSID [PASSWORD] | join SSID | forget SSID | list | SSID [PASSWORD]
-// The SSID has no spaces; the rest of the line is the password.
-static void wifiCommand(const std::string& args) {
-    size_t sp = args.find(' ');
-    std::string verb = args.substr(0, sp), rest = sp == std::string::npos ? "" : args.substr(sp + 1);
-    auto split = [](const std::string& s, std::string& ssid, std::string& pass) {
-        size_t p = s.find(' ');
-        ssid = s.substr(0, p);
-        pass = p == std::string::npos ? "" : s.substr(p + 1);
-    };
-    std::string ssid, pass;
-    if (verb == "add") {
-        split(rest, ssid, pass);
-        printf("%s\n", net::addNetwork(ssid, pass) ? "wifi: saved" : "wifi: save failed");
-    } else if (verb == "join") {
-        net::join(rest);
-        printf("wifi: joining '%s'\n", rest.c_str());
-    } else if (verb == "forget") {
-        printf("%s\n", net::forget(rest) ? "wifi: forgotten" : "wifi: not saved");
-    } else if (verb == "list") {
-        printf("%s\n", net::status().c_str());
-    } else {
-        split(args, ssid, pass);
-        printf("%s\n", net::setCredentials(ssid, pass) ? "wifi: saved, joining" : "wifi: save failed");
-    }
-}
-
 static void readerTask(void*) {
-    char line[512];   // room for "ha token <a long-lived HA token>"
+    char line[128];
     size_t n = 0;
     while (true) {
         int c = fgetc(stdin);
@@ -66,14 +36,8 @@ static void readerTask(void*) {
         else if (!strcmp(line, "list")) r.cmd = Cmd::List;
         else if (!strcmp(line, "stats")) r.cmd = Cmd::Stats;
         else if (!strcmp(line, "bench")) r.cmd = Cmd::Bench;
-        else if (!strncmp(line, "wifi ", 5)) { wifiCommand(line + 5); continue; }
-        else if (!strcmp(line, "ha") || !strncmp(line, "ha ", 3)) {
-            if (!ha::console(line[2] ? line + 3 : "")) printf("? ha [url URL | token TOKEN | entities ID ... | poll]\n");
-            continue;
-        }
         else if (!strcmp(line, "named") || !strncmp(line, "named ", 6)) {
-            // The showing document's named variables and their values, those starting with
-            // the prefix given.
+            // The showing document's named variables and their values (those with the prefix).
             std::vector<rcstage::NamedValue> vs;
             const char* prefix = line[5] ? line + 6 : "";
             if (!rcstage::namedValues(vs, 2000)) printf("named: no answer from the player\n");
@@ -82,9 +46,6 @@ static void readerTask(void*) {
                     printf("%s = %s (%s)\n", v.name.c_str(), v.value.c_str(), v.type.c_str());
             continue;
         }
-        else if (!strcmp(line, "net")) { printf("%s\n", net::status().c_str()); continue; }
-        else if (!strcmp(line, "scan")) { net::scan(true); continue; }
-        else if (!strcmp(line, "ble")) { ble::start(); continue; }
         else if (!strncmp(line, "act ", 4)) {
             r.cmd = Cmd::Act;
             strlcpy(r.text, line + 4, sizeof(r.text));

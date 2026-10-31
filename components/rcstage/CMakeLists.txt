@@ -1,7 +1,7 @@
-# rcstage: one RemoteCompose document live on a board's screen (player task, touch, banner,
+# rcstage: one RemoteCompose document live on a board's screen (player task, touch,
 # system/named variables, host actions) and the device-state sampler. Hardware comes from
-# the selected board's `board` component (board/board.h). Shared by firmware/rcplayer and
-# firmware/muse-gadget.
+# the selected board's `board` component (board/board.h). Used by the sample player
+# (esp32/firmware/rcplayer).
 set(FONT_DIR ${CMAKE_CURRENT_LIST_DIR}/../../assets/fonts)
 idf_component_register(SRCS src/stage.cpp src/device_state.cpp
                        INCLUDE_DIRS include

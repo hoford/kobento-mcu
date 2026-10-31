@@ -1,5 +1,4 @@
 # The PaperS3's settings for firmware/rcplayer (loaded after the app's own defaults).
-CONFIG_RCPLAYER_DEVICE_NAME="paper"
 # As on the other ESP32-S3 boards: every plain malloc/new in PSRAM (the engine makes
 # thousands of small ones), and a pool of internal RAM kept back for Wi-Fi, DMA and drivers.
 CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=0

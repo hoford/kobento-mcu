@@ -1,18 +1,18 @@
-# stm32u5-rc: RemoteCompose on the STM32U5A9J-DK
+# Kobento on the STM32U5A9J-DK
 
-A RemoteCompose player for ST's STM32U5A9J-DK discovery kit (STM32U5A9NJ, Cortex-M33 at
-160 MHz, a 480 x 480 round MIPI-DSI panel, 64 MB HSPI PSRAM). It runs the same engine
-(`rccore`) and ThorVG backend as the ESP32 players in `../esp32-rc`, built unchanged from
-there; this repository adds the board layer and a single-threaded player loop.
+The STM32 side of **Kobento** — a bare-metal RemoteCompose player for ST's STM32U5A9J-DK
+discovery kit (STM32U5A9NJ, Cortex-M33 at 160 MHz, a 480 x 480 round MIPI-DSI panel, 64 MB
+HSPI PSRAM). It builds the repo's shared components (`../components/{rccore,thorvg,kobentovg}`,
+the fonts and the documents) unchanged and adds the board layer and a single-threaded player
+loop. It is a pure display sample: the board has no radio, so there is no networking.
 
-Status (2026-10-22): all 18 embedded documents load and render on the board. There's no
-networking: the board has no radio, so no Wi-Fi or Muse.
+All embedded documents load and render on the board. Run every command below from this
+`stm32/` directory.
 
-## Sibling checkouts
+## Sibling checkouts (beside the repo)
 
 | Path | What |
 |---|---|
-| `../esp32-rc` | `components/{rccore,thorvg,kobentovg}` build files, ThorVG, the fonts and the documents |
 | `../remotecompose-experiments` | the engine, `players/cpp/lib/rccore` (owned by other agents: report bugs, don't edit) |
 | `../STM32CubeU5` | ST's HAL, CMSIS and this board's BSP (`git clone --recurse-submodules https://github.com/STMicroelectronics/STM32CubeU5`) |
 
