@@ -167,6 +167,7 @@ def get_shape_segs(el, m):
 def main():
     svg_path, out_json, CW, CH = sys.argv[1], sys.argv[2], float(sys.argv[3]), float(sys.argv[4])
     margin = float(sys.argv[5]) if len(sys.argv) > 5 else 0.06 * min(CW, CH)
+    bg_override = sys.argv[6] if len(sys.argv) > 6 else None  # e.g. "#000000"
     root = ET.parse(svg_path).getroot()
     vb = root.get("viewBox")
     vbw, vbh = (float(vb.split()[2]), float(vb.split()[3])) if vb else (CW, CH)
@@ -196,6 +197,8 @@ def main():
             bg = sh[1]
         else:
             fg.append(sh)
+    if bg_override:
+        bg = bg_override
 
     # fit all foreground into the canvas (uniform scale, centered)
     xs = [p[0] for sh in fg for p in seg_pts(sh[0])]
