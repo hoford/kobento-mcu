@@ -5,6 +5,18 @@
 The full identity board is in this directory:
 [Kobento-Brand-Identity-Board.png](Kobento-Brand-Identity-Board.png).
 
+## Logo files (vector, self-contained SVG)
+
+Icon mark only — no wordmark yet.
+
+| File | Use |
+|---|---|
+| [kobento-logo-color.svg](kobento-logo-color.svg) | color mark (open red lid, cream box, palette tiles) on white |
+| [kobento-logo-black.svg](kobento-logo-black.svg) | black-on-white mark (charcoal `#0F172A`, white tiles) |
+
+Both are flat-vector interpretations of the 3D bento-box logo, 600×590, with a 60 px
+clear-space margin. No embedded fonts. A wordmark lockup can be added later.
+
 ## Color palette
 
 | Role | Name | Hex |
