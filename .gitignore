@@ -1,0 +1,22 @@
+# build outputs (any target, any depth)
+**/build/
+**/build-*/
+**/managed_components/
+**/dependencies.lock
+**/sdkconfig
+**/sdkconfig.old
+**/*.log
+
+# host scratch / reference builds (esp32/host)
+esp32/host/skia-ref/
+esp32/host/out/
+esp32/host/sweep*/
+esp32/host/sweep*.txt
+esp32/host/scratch/
+
+# local secrets (Wi-Fi, Muse SDK token)
+**/sdkconfig.secrets
+
+.DS_Store
+backups/
+__pycache__/

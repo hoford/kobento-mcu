@@ -1,0 +1,12 @@
+menu "RemoteCompose ThorVG renderer"
+
+config KOBENTOVG_3D
+    bool "3D operations (software rasterizer)"
+    default y
+    help
+        Draw RemoteCompose's 3D operations (meshes, cameras, lights) with rccore's software
+        rasterizer. It needs two full-screen buffers plus a snapshot per run of meshes, and
+        it is slow on small chips. When off, 3D operations are skipped and documents/3d/ is
+        not embedded.
+
+endmenu

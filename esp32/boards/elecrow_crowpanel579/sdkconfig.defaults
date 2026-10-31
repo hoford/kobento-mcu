@@ -1,0 +1,27 @@
+# Elecrow CrowPanel ESP32 5.79" E-paper HMI Display: ESP32-S3-WROOM-1-N8R8 (8 MB quad flash,
+# 8 MB octal PSRAM), 792x272 e-paper on two SSD1683 controllers over SPI, five keys, console
+# on UART0 through a CH340. Loaded by every app before its own sdkconfig.defaults. See
+# README.md here.
+
+CONFIG_IDF_TARGET="esp32s3"
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+
+# ── Memory ──
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="8MB"
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+# CONFIG_SPIRAM_IGNORE_NOTFOUND is not set
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+
+# ── Console: UART0 at 115200 (the CH340), bidirectional ──
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+
+# ── BLE host memory in PSRAM ──
+CONFIG_BT_NIMBLE_MEM_ALLOC_MODE_EXTERNAL=y
+
+# ── No 3D: an e-paper panel shows no animation ──
+CONFIG_KOBENTOVG_3D=n

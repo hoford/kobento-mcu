@@ -1,0 +1,52 @@
+# M5Stack Tab5: ESP32-P4 rev v1.3, 16 MB QIO flash, 32 MB hex PSRAM, 720x1280 MIPI-DSI
+# panel with touch, ESP32-C6 radio co-processor on 4-bit SDIO, native USB-Serial-JTAG
+# (303a:1001). Loaded by every app before its own sdkconfig.defaults. See README.md here.
+
+# ── Chip: the Tab5 ships rev v1.x (eco2); IDF v6 defaults to rev >= 3.1 ──
+CONFIG_IDF_TARGET="esp32p4"
+CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y
+CONFIG_ESP32P4_REV_MIN_100=y
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_360=y
+
+# ── Memory: 16 MB QIO flash, 32 MB hex PSRAM @ 200 MHz ──
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_HEX=y
+CONFIG_SPIRAM_SPEED_200M=y
+CONFIG_SPIRAM_XIP_FROM_PSRAM=y
+CONFIG_CACHE_L2_CACHE_256KB=y
+CONFIG_CACHE_L2_CACHE_LINE_128B=y
+
+# ── Display (BSP): no LVGL; rcstage pushes its own frames ──
+CONFIG_BSP_LCD_DPI_BUFFER_NUMS=1
+
+# ── Console: the USB-C port is the P4's USB-Serial-JTAG; make it the primary, bidirectional
+# console so tools/snap.py can send commands (the default is output-only).
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+
+# ── Radio: ESP32-C6 over esp_hosted 3.x, 4-bit SDIO slot 1 ──
+# Tab5 pins (M5Tab5-UserDemo / esp-bsp); esp_hosted's defaults are the P4 Function-EV board's.
+CONFIG_ESP_HOSTED_IDF_SLAVE_TARGET="esp32c6"
+CONFIG_SLAVE_IDF_TARGET_ESP32C6=y
+CONFIG_ESP_HOSTED_HOST_TRANSPORT_BUS_SDIO=y
+CONFIG_ESP_HOSTED_SDIO_SLOT_1=y
+CONFIG_ESP_HOSTED_HOST_SDIO_BUS_WIDTH_4=y
+CONFIG_ESP_HOSTED_HOST_SDIO_CLK_KHZ=40000
+CONFIG_ESP_HOSTED_HOST_SDIO_PIN_CMD=13
+CONFIG_ESP_HOSTED_HOST_SDIO_PIN_CLK=12
+CONFIG_ESP_HOSTED_HOST_SDIO_PIN_D0=11
+CONFIG_ESP_HOSTED_HOST_SDIO_PIN_D1=10
+CONFIG_ESP_HOSTED_HOST_SDIO_PIN_D2=9
+CONFIG_ESP_HOSTED_HOST_SDIO_PIN_D3=8
+CONFIG_ESP_HOSTED_HOST_RESET_GPIO=15
+CONFIG_ESP_HOSTED_HOST_SDIO_RX_STREAMING_MODE=y
+CONFIG_ESP_WIFI_REMOTE_LIBRARY_HOSTED=y
+# The C6's power is behind IO expander 0x44 P0: board::radioPower() switches it on, then
+# the app brings esp_hosted up.
+CONFIG_ESP_HOSTED_AUTO_CALL_INIT_BEFORE_APP_MAIN=n
+
+# ── BLE: NimBLE on the P4, the controller on the C6 (Hosted-HCI over the same SDIO link) ──
+CONFIG_ESP_HOSTED_HOST_FEAT_BT=y
+CONFIG_BT_CONTROLLER_DISABLED=y
+CONFIG_BT_NIMBLE_TRANSPORT_UART=n

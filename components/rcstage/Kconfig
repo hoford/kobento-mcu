@@ -1,0 +1,17 @@
+menu "RemoteCompose stage"
+
+    config RCSTAGE_TIMEZONE
+        string "Time zone (POSIX TZ)"
+        default "PST8PDT,M3.2.0,M11.1.0"
+        help
+            The local time zone for documents that show the time, as a POSIX TZ string,
+            e.g. "PST8PDT,M3.2.0,M11.1.0" (US Pacific), "GMT0BST,M3.5.0/1,M10.5.0" (UK),
+            "UTC0".
+
+    config RCSTAGE_NTP_SERVER
+        string "NTP server"
+        default "pool.ntp.org"
+        help
+            Where the clock is set from (SNTP), once Wi-Fi has an address. Empty: never.
+
+endmenu

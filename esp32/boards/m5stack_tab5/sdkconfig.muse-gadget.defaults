@@ -1,0 +1,6 @@
+# The Tab5's settings for firmware/muse-gadget (loaded after the app's own defaults).
+CONFIG_HOMEHUB_BLE_NAME_SUFFIX="-Tab5"
+# No free button (GPIO 28, the SDK default, is the codec's I2S DIN): taps call gadget_ext_press().
+CONFIG_HOMEHUB_BUTTON=n
+# The factory C6 image starts its controller at boot and ignores the init request.
+CONFIG_HOMEHUB_HOSTED_BT_CONTROLLER_INIT=n

@@ -1,0 +1,11 @@
+menu "M5Stack Core2"
+
+config CORE2_ROTATE_180
+    bool "Turn the screen and touch 180 degrees"
+    default n
+    help
+        Off: M5Stack's standard orientation (MADCTL 0x08, touch as reported), with the
+        touch strip for the three buttons below the screen. On: the device held the other
+        way up, picture and touch turned together.
+
+endmenu

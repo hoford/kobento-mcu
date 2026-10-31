@@ -1,0 +1,33 @@
+# M5Stack Core2: classic ESP32-D0WDQ6-V3 (rev 3.0), 16 MB flash, 8 MB quad PSRAM (4 MB
+# mapped), 2.0" 320x240 ILI9342C on SPI, FT6336U touch, AXP192 (v1.0) or AXP2101 (v1.1)
+# PMU, console on UART0 through a CH9102F/CP2104 USB bridge. Loaded by every app before its
+# own sdkconfig.defaults. See README.md here.
+
+CONFIG_IDF_TARGET="esp32"
+CONFIG_ESP32_REV_MIN_3=y
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+
+# ── Memory ──
+CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_SPEED_80M=y
+# CONFIG_SPIRAM_IGNORE_NOTFOUND is not set
+# Rev 3 has no PSRAM cache bug, so stacks and BSS may live there.
+CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY=y
+CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+
+# ── Console: UART0 at 115200 (the default), bidirectional ──
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+
+# ── BLE only: release the classic Bluetooth controller's memory ──
+CONFIG_BTDM_CTRL_MODE_BLE_ONLY=y
+CONFIG_BTDM_CTRL_MODE_BR_EDR_ONLY=n
+CONFIG_BTDM_CTRL_MODE_BTDM=n
+CONFIG_BT_NIMBLE_MEM_ALLOC_MODE_EXTERNAL=y
+
+# ── No 3D for now: the software rasterizer needs ~600 KB of buffers and runs at ~1 fps ──
+CONFIG_KOBENTOVG_3D=n
