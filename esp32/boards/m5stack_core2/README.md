@@ -23,29 +23,17 @@ BSP and supports **v1.0 only**.
   esptool --port /dev/cu.usbserial-* write-flash 0 backups/m5stack_core2-784193419c-factory.bin
   ```
 
-## What it runs now: Home Assistant thermostats (2026-10-24)
+## Running it
 
-- `sdkconfig.rcplayer.defaults` names one document (`CONFIG_RCPLAYER_DOCUMENTS`):
-  `ha_thermostat_pages` (`documents/ha/`, made by `tools/ha/make_ha_thermostats.py`). It has
-  Home Assistant's three demo thermostats, one per page. Delete that line to get the usual
-  demo documents back.
-- **The marks under the screen:** A goes back a page, B and C go forward (rows 240..279 of the
-  touch panel; `touchMarkStep` in `display.cpp`). The document declares `Control.next` and
-  `Control.back`, so the player passes the presses to it as counts instead of switching
-  documents. The power key counts as forward. Paging is done by the document, not by
-  swiping.
-- **− and +** change the page's set point by 0.5 °. The document sets
-  `Control.climate.<id>.temperature`, or the low and high ends together for a range. The
-  player hears that (`listenNamed("Control.*")`), calls Home Assistant's
-  `climate.set_temperature`, and puts the variable back to 0
-  (`docs/RC_ACTION_PATTERNS.md`, pattern 8).
-- **Dragging round the dial** (the orange handle, from bottom left, 7 °, to bottom right,
-  35 °) sets the set point in 0.5 ° steps. The value goes to Home Assistant 0.3 s after the
-  finger lifts. A range (Ecobee) doesn't drag; use − and +.
-- **The values come from Home Assistant:** an automation pushes them to `POST /named` on
-  port 8937 (`~/homeassistant-demo`). The board is 192.168.50.46 on NIXIOT.
-- **The calls need** `ha url http://192.168.50.85:8123` and `ha token …` on the console. With no
-  `ha entities`, it doesn't poll; it only makes calls.
+In kobento-mcu this board runs the minimal player — the embedded demo documents, stepped by
+the power key or the serial console (see the repo [README](../../../README.md)). The three
+printed marks below the screen are rows 240–279 of the touch panel (`touchMarkStep` in
+`display.cpp`): a document that declares `Control.next` / `Control.back` receives them (and
+the power key) as button presses instead of them stepping documents.
+
+The Home Assistant thermostat demo that used to run here (Wi-Fi + `POST /named` + climate
+set-points over the dial and ± keys) moved to **kobento-mcuApps** (`esp32/firmware/rcplayer`),
+which builds on this library.
 
 ## Two revisions, told apart at boot
 

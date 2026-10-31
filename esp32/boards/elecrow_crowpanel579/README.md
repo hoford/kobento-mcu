@@ -60,6 +60,11 @@ Sources, read on 2026-10-23:
 
 ## The player on it
 
+> **Moved:** the Home Assistant / IoT / wide documents, the `CONFIG_RCPLAYER_DOCUMENTS`
+> selection and the HA client described below are part of **kobento-mcuApps** now. In
+> kobento-mcu this board runs the minimal player — the demo documents, stepped by the keys.
+> The `kDensity`, dithering and key facts here still apply.
+
 - `kDensity` 1.0: documents lay out in 792 x 272 dp.
 - Built in, chosen by `CONFIG_RCPLAYER_DOCUMENTS` in `sdkconfig.rcplayer.defaults` (the
   portrait documents don't suit this strip):

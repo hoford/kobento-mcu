@@ -111,6 +111,10 @@ The schematic was not read.
 
 ## As a Muse gadget (firmware/muse-gadget)
 
+> **Moved:** the Muse gadget app is part of **kobento-mcuApps** now (it needs the external Muse
+> SDK + a token). kobento-mcu runs the minimal player on this board. The pairing/partition
+> notes below apply to that app.
+
 - Settings: `sdkconfig.muse-gadget.defaults` (BLE name `MuseGadget-Paper-XXXXXX`, a tap stands
   in for the setup button, the engine's allocations in PSRAM).
 - The first install from rcplayer needs a full `flash` and an erased NVS (0x11000, 0xC000):
