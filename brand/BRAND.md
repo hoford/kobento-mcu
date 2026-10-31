@@ -11,15 +11,15 @@ Icon mark only — no wordmark yet.
 
 | File | Use |
 |---|---|
-| [kobento-logo-color.svg](kobento-logo-color.svg) | color mark only (open red lid, cream box, palette tiles) on white, 600×590 |
-| [kobento-logo-black.svg](kobento-logo-black.svg) | black-on-white mark only (charcoal `#0F172A`, white tiles), 600×590 |
-| [kobento-lockup-color.svg](kobento-lockup-color.svg) | color mark + wordmark, vertical lockup, 672×750 |
-| [kobento-lockup-black.svg](kobento-lockup-black.svg) | black-on-white mark + wordmark lockup, 672×750 |
+| [kobento-logo-color.svg](kobento-logo-color.svg) | color mark — isometric bento box (open red lid, cream box, palette tiles), 1440×1060 |
+| [kobento-logo-black.svg](kobento-logo-black.svg) | black-on-white mark — isometric (charcoal `#0F172A` + slate `#334155` faces, white tiles) |
+| [kobento-lockup-color.svg](kobento-lockup-color.svg) | mark + wordmark lockup *(flat mark — pending iso update)* |
+| [kobento-lockup-black.svg](kobento-lockup-black.svg) | mark + wordmark lockup *(flat mark — pending iso update)* |
 | [kobento-wordmark.svg](kobento-wordmark.svg) | wordmark only — "Kobento" outlines |
 
-Flat-vector interpretations of the 3D bento-box logo. The wordmark is **Helvetica Neue
-Light** converted to outline paths, so the files are self-contained (no embedded or
-referenced fonts). Marks have a 60 px clear-space margin.
+The marks are flat isometric interpretations of the 3D bento-box logo. The wordmark is
+**Helvetica Neue Light** converted to outline paths, so every file is self-contained (no
+embedded or referenced fonts). Flat palette only — no strokes, gradients, filters or shadows.
 
 ## Color palette
 
