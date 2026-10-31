@@ -1,35 +1,4 @@
-<!-- Kobento black-on-white logo (isometric) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1060" width="1440" height="1060">
-<!-- Flat palette, no strokes, gradients, filters or shadows -->
-<path fill="#FFFFFF" d="M0 0H1440V1060H0Z"/>
-<!-- lid: two flat colors -->
-<path fill="#0F172A" d="M173 383Q192 340 241 286L279 248Q300 230 338 216L876 36Q954 11 987 68L1056 163Q1080 197 1054 233L947 366 270 568Q224 585 199 541L163 466Q151 436 173 383Z"/>
-<path fill="#334155" d="M231 538Q229 521 262 483L322 404Q336 382 375 367L955 150Q1009 132 1028 170Q1040 190 1017 219L928 326 340 518Q269 548 231 538Z"/>
-<!-- box single cream body -->
-<path fill="#334155" d="M260 538Q266 501 326 485L862 317Q956 290 996 353L1187 598Q1216 637 1203 697L1204 795Q1206 837 1152 856L551 1022Q468 1043 423 991L265 759Q247 732 248 691L248 584Q248 562 260 538Z"/>
-<!-- top edge cream single color -->
-<path fill="#0F172A" d="M267 544Q276 515 328 495L860 328Q951 302 991 357L1177 601Q1224 673 1144 712L550 876Q472 899 431 839L270 617Q246 584 267 544Z"/>
-<!-- single solid black tray -->
-<path fill="#0F172A" d="M298 555Q306 536 343 524L866 359Q938 337 968 381L1142 611Q1191 672 1122 698L547 851Q483 872 453 824L301 611Q277 577 298 555Z"/>
-<!-- six colored shapes -->
-<!-- lavender tile -->
-<path fill="#FFFFFF" d="M354 541L535 482Q561 473 575 493L640 596Q652 617 629 627L432 681Q399 688 385 665L326 587Q307 559 354 541Z"/>
-<!-- blue pill -->
-<path fill="#FFFFFF" d="M659 444L893 371Q923 363 935 384L957 413Q973 439 942 451L699 526Q673 534 657 513L630 477Q614 460 659 444Z"/>
-<!-- light blue pill -->
-<path fill="#FFFFFF" d="M704 539L934 465Q957 459 968 478L974 489Q987 511 960 521L739 590Q714 601 696 582L683 566Q673 548 704 539Z"/>
-<!-- green tile -->
-<path fill="#FFFFFF" d="M441 708L568 667Q602 656 619 681L667 750Q680 773 656 788L513 834Q489 842 470 819L420 748Q403 720 441 708Z"/>
-<!-- orange circle -->
-<path fill="#FFFFFF" d="M849 677Q849 740 770 761Q699 779 672 721Q645 668 704 627Q753 594 804 619Q843 635 849 677Z"/>
-<!-- coral tile -->
-<path fill="#FFFFFF" d="M882 580L1008 539Q1040 526 1056 550L1118 633Q1136 655 1107 670L958 715Q931 722 914 700L864 629Q847 598 882 580Z"/>
-<!-- flat decorative symbols: lavender two mountains and small moon/sun -->
-<circle cx="551" cy="528" r="18" fill="#0F172A"/>
-<path fill="#0F172A" d="M421 649L456 565Q462 550 476 557L535 596 607 605Q614 609 606 616L430 661Q412 662 421 649Z"/>
-<path fill="#0F172A" d="M507 638L544 577Q551 565 563 576L609 606Q616 612 602 619L507 644Z"/>
-<!-- white circular dot on green -->
-<circle cx="597" cy="739" r="30" fill="#0F172A"/>
-<!-- play symbol -->
-<path fill="#0F172A" d="M938 598Q937 590 947 590L1018 601Q1030 603 1022 613L977 659Q970 666 963 656Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 980" width="1240" height="980" role="img" aria-label="Kobento">
+<rect x="0" y="0" width="1240" height="980" fill="#FFFFFF"/>
+<g transform="translate(620.0,490.0) rotate(-7.0) skewX(-10.0) scale(1,0.84) translate(-470.0,-310.0)" stroke-linejoin="round"><rect x="0" y="0" width="940" height="620" rx="110" ry="110" fill="#FFFFFF" stroke="#111418" stroke-width="22" /><rect x="40" y="40" width="860" height="540" rx="78" ry="78" fill="none" stroke="#111418" stroke-width="22" /><polygon points="150,250 150,110 275,185" fill="#111418" stroke="#111418" stroke-width="10" stroke-linejoin="round"/><rect x="330" y="120" width="360" height="46" rx="23" ry="23" fill="#111418" /><rect x="330" y="196" width="300" height="46" rx="23" ry="23" fill="#111418" /><circle cx="205" cy="430" r="78" fill="#111418"/><circle cx="420" cy="440" r="78" fill="#111418"/><rect x="610" y="300" width="165" height="150" rx="34" ry="34" fill="#111418" /></g>
 </svg>

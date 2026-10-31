@@ -21,6 +21,21 @@ The marks are flat isometric interpretations of the 3D bento-box logo. The wordm
 **Helvetica Neue Light** converted to outline paths, so every file is self-contained (no
 embedded or referenced fonts). Flat palette only — no strokes, gradients, filters or shadows.
 
+## Logo as RemoteCompose documents
+
+The logos also exist as **RC documents**, drawn natively by the Kobento engine (vector
+paths, not embedded bitmaps) — so any Kobento player can show the brand:
+
+| File | From |
+|---|---|
+| `../documents/kobento_logo_color.rc` | `kobento-logo-color.svg` (isometric, color) |
+| `../documents/kobento_logo_black.rc` | `kobento-logo-black.svg` (outlined, black on white) |
+
+`../tools/logo/svg2rc.py` converts an SVG to RC JSON (it bakes every SVG transform into
+absolute paths, since RC has no skew matrix, and emits `paint`+`drawPath`); `build_logos.sh`
+regenerates both `.rc` files at any canvas size. `build_bw.py` regenerates the black SVG.
+Verified on hardware: the color logo on the Core2, the black logo on the CrowPanel e-ink.
+
 ## Color palette
 
 | Role | Name | Hex |
