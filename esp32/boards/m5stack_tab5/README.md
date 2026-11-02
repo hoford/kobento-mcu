@@ -13,7 +13,7 @@ Items marked **(verified)** were checked on our own unit.
 ## Our unit
 - The USB port is the P4's native USB Serial/JTAG (`303a:1001`) at `/dev/cu.usbmodem31101`. The serial number is the MAC, `30:ED:A0:E3:00:F0` **(verified)**.
 - The ROM banner reads `ESP-ROM:esp32p4-eco2-20240710`, so the P4 is a **rev v1.x** chip **(verified)**.
-- It came with a firmware that prints `rcNet` / `RECEIVER port 8937`. That firmware runs an HTTP server where `GET /info` returns `{"name":"M5Stack","version":1}`. Wi-Fi was up on 192.168.50.154. We don't know where this firmware came from.
+- It came with a firmware that prints `rcNet` / `RECEIVER port 8937`. That firmware runs an HTTP server where `GET /info` returns `{"name":"M5Stack","version":1}`. Wi-Fi was up on the local network. We don't know where this firmware came from.
 
 ## Chip and memory: required sdkconfig on IDF v6
 ```

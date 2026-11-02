@@ -99,7 +99,7 @@ The convention:
 | `system.banner_color` | color | The status line's accent colour |
 | `muse.link` | float | -1 error, 0 not paired, 1 connecting, 2 connected |
 | `muse.agent`, `muse.device` | string | the Muse agent's title, the gadget's BLE name |
-| `system.wifi_status` | string | The Wi-Fi screen's status line ("Connected to NIXIOT") |
+| `system.wifi_status` | string | The Wi-Fi screen's status line ("Connected to HomeWiFi") |
 | `system.wifi_scanning` | float | 1 while a scan runs |
 | `system.wifi_page`, `system.wifi_pages` | string, float | "1/2", and the page count, when the list is longer than the screen |
 | `system.wifi_<i>_ssid` | string | Row *i* (0–9) of the network list |

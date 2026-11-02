@@ -43,11 +43,16 @@ Shared library at the top level (`components/`, `third_party/`, `documents/`, `a
 
 ## Toolchain (macOS)
 
-- **ESP-IDF v6.0.1** at `~/esp/esp-idf-v6`. Run `. ~/esp/esp-idf-v6/export.sh` in the same
-  shell command as `idf.py`, because shell state doesn't persist between tool calls.
-- **Arm GNU Toolchain 15.2** for STM32, unpacked at
-  `~/tools/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi` (the cmake toolchain file
-  points there; override with `-DARM_GCC_BIN=...`).
+> Paths below (`~/esp/esp-idf-v6`, `~/tools/arm-gnu-toolchain-…`) are where this repo's author
+> installed each toolchain; install yours wherever and substitute. The build honours the usual
+> overrides — `$IDF_PATH` for ESP-IDF, `-DARM_GCC_BIN=` / `$ARM_GCC_BIN` for the Arm toolchain.
+
+- **ESP-IDF v6.0.1**, sourced with `. $IDF_PATH/export.sh` (the author's is `~/esp/esp-idf-v6`).
+  Run it in the same shell command as `idf.py`, because shell state doesn't persist between tool
+  calls.
+- **Arm GNU Toolchain 15.2** for STM32 (any recent release works). The cmake toolchain file
+  defaults to `~/tools/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi`; point it at your
+  install with `-DARM_GCC_BIN=.../bin`, `$ARM_GCC_BIN`, or by having `arm-none-eabi-gcc` on PATH.
 - **probe-rs** (`brew install probe-rs-tools`) flashes and screenshots the STM32.
 - The host renderer builds with plain CMake + Ninja (see below).
 - The shell is zsh: quote arrays as `"${arr[@]}"`, and use `$=var` for word splitting.
@@ -100,6 +105,39 @@ tools/sweep_skia.sh DIR OUT 400   # same engine, Skia vs ThorVG; isolates backen
 `rc2json` (built in `../remotecompose-experiments`) decodes a `.rc` — the engine-independent
 check when a document looks wrong.
 
+## Linux player (`linux/`) — Raspberry Pi and desktop
+
+A full display-only player for Linux targets (Raspberry Pi, incl. the Zero W; any desktop),
+structured like the reference `rcviewer`: a **resizable SDL2 window** on the desktop
+(Wayland/PIXEL or X11), a player loop, keyboard nav and a stdin console. A Pi is a Linux board,
+**not** a microcontroller, so this does not use ESP-IDF or `rcstage` (both FreeRTOS/ESP-IDF-
+coupled). It builds on `rccore` + `kobentovg` directly — the same path as `esp32/host/rc2png` —
+and reimplements rcplayer's player loop (repaint scheduling via `getRepaintDelay`/
+`doesNeedsRepaint`), console, document navigation, `_round`/`_light` variants and host actions in
+`linux/src/` (`player.*`, `display.*`, `main.cpp`). SDL2 is optional at build time: without it the
+player builds headless (snap to PNG), which is how it's smoke-tested on macOS.
+
+**ThorVG, not Skia, on ARMv6:** the engine repo's `rcviewer` uses Skia, but the project pulls
+Skia as a *prebuilt* (HumbleUI/SkiaBuild) and only `linux-arm64`/`x64` exist — there is no ARMv6
+(Pi Zero W, 32-bit `armv6l`) build, and compiling Skia on that hardware is impractical. ThorVG
+builds natively on ARMv6, so the Pi-Zero player uses it. On a 64-bit Pi, the Skia `rcviewer`
+builds from the engine repo as-is.
+
+```sh
+cmake -S linux -B linux/build -G Ninja && cmake --build linux/build
+linux/build/rcplayer documents --once          # render the first doc to a PNG (smoke test)
+linux/build/rcplayer documents                  # SDL2 window on the desktop, else headless
+```
+
+Over SSH to a Wayland desktop, prefix the run with
+`XDG_RUNTIME_DIR=/run/user/1000 WAYLAND_DISPLAY=wayland-0 DISPLAY=:0` so the window attaches to
+the session (see `linux/README.md`). Cross-compile with `linux/cmake/rpi-cross.cmake` (env-driven;
+a **glibc** cross GCC, not the STM32 bare-metal `arm-none-eabi`). Not yet wired: touch/mouse to
+documents, backlight, device-state vars. Placement rationale: it reuses the in-repo components
+and host render path, so it lives here rather than in the portable engine
+(`remotecompose-experiments`); if Linux targets grow, a platform-neutral split may be worth
+revisiting.
+
 ## Documents and tooling
 
 - `documents/*.rc` are embedded by globbing. `documents/fit/*.rc` are designed at a fixed size
@@ -108,8 +146,9 @@ check when a document looks wrong.
   `CONFIG_RCPLAYER_DOCUMENTS` in its `sdkconfig.rcplayer.defaults`.
 - `tools/logo/` turns an SVG into an RC document: `svg2rc.py` bakes SVG transforms into
   absolute paths (RC has no skew matrix) and emits `paint`+`drawPath`; `build_logos.sh`
-  compiles the brand logos to `documents/`. `tools/splash/` holds the `json2rc` compiler
-  (`compile.mjs`) it uses.
+  compiles the brand logos to `documents/`. `tools/splash/` builds the boot splash
+  (`make_splash.py` → `documents/kobento_splash.rc`) and holds the `json2rc` compiler
+  (`compile.mjs`) both tools use.
 - Check a change on the Mac first with `rc2png` before flashing; when a refactor shouldn't
   change a document, confirm the `.rc` is byte-identical (`git diff --stat`).
 

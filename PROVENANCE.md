@@ -32,8 +32,8 @@ Prebuilt RemoteCompose documents, embedded by both targets. Origins:
 
 - The demo documents are traced from or derived from **RemoteCompose-Examples**
   (<https://github.com/hoford/RemoteCompose-Examples>) and the androidx RemoteCompose demos.
-- `muse_splash.rc` (the start-up screen) is built by `tools/splash/make_splash.py` from a traced
-  Muse mark and `tools/splash/crane.svg` (Wikimedia's "Origami — Crane").
+- `kobento_splash.rc` (the start-up screen) is drawn from scratch by `tools/splash/make_splash.py`
+  — the Kobento bento-box mark and wordmark, no third-party artwork.
 - They are compiled to `.rc` with `json2rc.js`, vendored from RemoteCompose-Examples under
   `tools/splash/`.
 

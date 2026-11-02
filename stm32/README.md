@@ -18,9 +18,11 @@ All embedded documents load and render on the board. Run every command below fro
 
 ## Tools
 
-- **Compiler:** Arm GNU Toolchain 15.2, unpacked in
-  `~/tools/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi`. The Homebrew cask needs
-  sudo; the tarball from developer.arm.com doesn't.
+- **Compiler:** Arm GNU Toolchain 15.2 (any recent release works). The author unpacked it in
+  `~/tools/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi`, which is the toolchain
+  file's default; install yours anywhere and point at it with `-DARM_GCC_BIN=.../bin`,
+  `$ARM_GCC_BIN`, or `arm-none-eabi-gcc` on PATH. The Homebrew cask needs sudo; the tarball
+  from developer.arm.com doesn't.
 - **Flashing:** probe-rs (`brew install probe-rs-tools`), about 50 s for the 1.9 MB image.
   - `st-flash` (stlink 1.9) also works, but takes about 4 minutes.
   - OpenOCD 0.12 doesn't know this chip (device id 0x481).

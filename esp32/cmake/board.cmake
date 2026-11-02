@@ -24,7 +24,7 @@ string(REGEX REPLACE "^CONFIG_IDF_TARGET=\"?([a-z0-9]+)\"?$" "\\1" _target "${_t
 if(_target AND NOT IDF_TARGET)
     set(IDF_TARGET ${_target})
 endif()
-message(STATUS "esp32-rc: board ${BOARD} (${_target})")
+message(STATUS "kobento-mcu: board ${BOARD} (${_target})")
 
 list(APPEND EXTRA_COMPONENT_DIRS ${ESP_RC_ROOT}/../components ${BOARD_DIR}/components)
 

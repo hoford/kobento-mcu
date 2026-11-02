@@ -37,6 +37,7 @@ tools/               the json2rc compiler, the logo generator, device scripts, c
 brand/               Kobento brand identity + logo assets. See BRAND.md
 esp32/               the ESP32 sample: boards/, firmware/rcplayer, host/, cmake/
 stm32/               the STM32U5 sample: board/, src/, tools/
+linux/               the Linux player (Raspberry Pi, desktop): framebuffer + console, same engine
 ```
 
 ## Supported platforms
@@ -48,6 +49,7 @@ cycled by the board's button or the serial console.
 |---|---|---|
 | ESP32 boards (Tab5, Core2, PaperS3, CrowPanel, AMOLED, round) | [esp32/README.md](esp32/README.md) | ESP-IDF; `-DBOARD=<board>` |
 | STM32U5A9J-DK | [stm32/README.md](stm32/README.md) | bare-metal; probe-rs to flash |
+| Linux (Raspberry Pi, incl. Zero; desktop) | [linux/README.md](linux/README.md) | full Linux, not an MCU; CMake, framebuffer `/dev/fb0`, no ESP-IDF |
 
 Host renderer (same engine + ThorVG backend, for fast iteration and pixel comparison):
 `cmake -S esp32/host -B esp32/host/build -G Ninja && ninja -C esp32/host/build`, then

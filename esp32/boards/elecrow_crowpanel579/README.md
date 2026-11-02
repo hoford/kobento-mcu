@@ -88,21 +88,9 @@ Sources, read on 2026-10-23:
   - dial down or MENU: the next document;
   - dial up or EXIT: the previous one;
   - pressing the dial: a full redraw.
-- Home Assistant, two ways (any board running rcplayer):
-  - **HA pushes** (works from NIXIOT, which can't open connections to the main network):
-    an automation posts "name=value" lines to `http://<display>:8937/named` when the
-    entities change, and once a minute. The `rc_displays` automation in
-    `~/homeassistant-demo/config/configuration.yaml` does this for this board (192.168.50.73 on NIXIOT) and the Core2.
-  - **The display polls**: rcplayer's `ha.cpp` polls each entity every 10 s over
-  HA's REST API while on Wi-Fi, and only changes reach the document. Set it up once from
-  the console; it's saved in NVS (so use `app-flash` to keep it):
-  ```
-  wifi NIXIOT <password>
-  ha url http://<HA host>:8123
-  ha token <a long-lived access token>     (HA: your profile, Security; never printed back)
-  ha entities climate.heatpump climate.hvac climate.ecobee
-  ha                                       (status)
-  ```
+- Home Assistant (push and poll) runs on this board through the integration player in
+  **kobento-mcuApps** (`esp32/firmware/rcplayer`), which brings its own Wi-Fi, `ha.cpp` and
+  the thermostat/IoT/wide documents. The minimal player in this library has no networking.
 - Console extras: `epd` (refresh counts and times), `epd clear`, `keys` (five seconds of the
   key levels).
 - No touch, battery gauge, RTC, motion sensor or sound.

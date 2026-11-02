@@ -161,8 +161,8 @@ extern "C" void app_main(void) {
     hooks.namedAction = [](const std::string& name, int, const std::string& value) {
         runHostAction(name, value);
     };
-    // Start on muse_splash if it is built in, else the first document.
-    sCurrent = sPrevious = std::max(0, findDoc("muse_splash"));
+    // Start on the Kobento splash if it is built in, else the first document.
+    sCurrent = sPrevious = std::max(0, findDoc("kobento_splash"));
     const auto& d = kEmbeddedDocs[sCurrent];
     rcstage::start(hooks, d.start, d.end - d.start, d.name);
     rcstage::deviceStateStart();   // battery / memory / clock as system variables, for the docs

@@ -4,7 +4,7 @@ debugger with probe-rs while the board runs, saved as PNG.
 
   tools/snap.py out.png [--elf build/rcplayer.elf]
 """
-import argparse, os, re, struct, subprocess, sys, zlib
+import argparse, os, re, shutil, struct, subprocess, sys, zlib
 
 ap = argparse.ArgumentParser()
 ap.add_argument("out")
@@ -12,7 +12,15 @@ ap.add_argument("--elf", default=os.path.join(os.path.dirname(__file__), "../bui
 ap.add_argument("--chip", default="STM32U5A9NJ")
 a = ap.parse_args()
 W = H = 480
-nm = os.path.expanduser("~/tools/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi/bin/arm-none-eabi-nm")
+# arm-none-eabi-nm from the toolchain: $ARM_GCC_BIN / $ARM_GCC if set, else PATH, else the
+# convenience default (adjust to where you unpacked the Arm GNU toolchain).
+_arm_bin = os.environ.get("ARM_GCC_BIN") or os.environ.get("ARM_GCC")
+if _arm_bin:
+    nm = os.path.join(_arm_bin, "arm-none-eabi-nm")
+elif shutil.which("arm-none-eabi-nm"):
+    nm = "arm-none-eabi-nm"
+else:
+    nm = os.path.expanduser("~/tools/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi/bin/arm-none-eabi-nm")
 sym = subprocess.run([nm, "-C", a.elf], capture_output=True, text=True).stdout
 m = re.search(r"^([0-9a-f]+) [bBdD] sFrame$", sym, re.M)
 if not m: sys.exit("sFrame not in " + a.elf)

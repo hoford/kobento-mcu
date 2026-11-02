@@ -1,8 +1,17 @@
 # Cross-compiling for the STM32U5 (Cortex-M33, single-precision FPU) with the Arm GNU toolchain.
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR arm)
+# Where the Arm GNU toolchain's bin/ lives. Pass -DARM_GCC_BIN=/path, or set $ARM_GCC_BIN /
+# $ARM_GCC; the default below is only a convenience — adjust it to wherever you unpacked the
+# toolchain (https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
 if(NOT ARM_GCC_BIN)
-    set(ARM_GCC_BIN $ENV{HOME}/tools/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi/bin)
+    if(DEFINED ENV{ARM_GCC_BIN})
+        set(ARM_GCC_BIN $ENV{ARM_GCC_BIN})
+    elseif(DEFINED ENV{ARM_GCC})
+        set(ARM_GCC_BIN $ENV{ARM_GCC})
+    else()
+        set(ARM_GCC_BIN $ENV{HOME}/tools/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi/bin)
+    endif()
 endif()
 set(CMAKE_C_COMPILER ${ARM_GCC_BIN}/arm-none-eabi-gcc)
 set(CMAKE_CXX_COMPILER ${ARM_GCC_BIN}/arm-none-eabi-g++)

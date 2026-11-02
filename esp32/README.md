@@ -20,8 +20,11 @@ is kobento-net / kobento-mcuApps).
 
 ## Build, flash, run
 
+Needs ESP-IDF v6.0.1 installed (anywhere — `~/esp/esp-idf-v6` below is just where this repo's
+author put it; use your own path).
+
 ```sh
-. ~/esp/esp-idf-v6/export.sh
+. ~/esp/esp-idf-v6/export.sh                                  # or wherever you installed ESP-IDF
 cd firmware/rcplayer
 idf.py -B build/<board> -DBOARD=<board> build                 # <board> = a dir under boards/
 idf.py -B build/<board> -DBOARD=<board> -p <PORT> app-flash   # app only; keeps saved NVS

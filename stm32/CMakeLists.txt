@@ -39,7 +39,7 @@ target_compile_options(cube PRIVATE -O2 -w)
 
 # Fonts and documents, linked in from their files (embedded.S, embedded.h).
 set(EMBED_DOCS
-    muse_splash activity_rings balls_animation_example dashboard double_pendulum_example flappy
+    kobento_splash activity_rings balls_animation_example double_pendulum_example flappy
     good_pie_chart moon_phase_dial server_clock touch2)
 set(EMBED_FIT kobento_logo_dark friendly_aliens_ufo gmt_watch jancy_clock maze maze_simple
     sakura_season solar_gmt_watch under_the_sea)

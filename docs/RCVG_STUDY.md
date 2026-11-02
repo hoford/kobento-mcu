@@ -44,28 +44,34 @@ Date: 2026-10-24. The original study was read-only. Implementation of the M0 har
 
 **Sources read**
 
+> Paths without a leading `~` or `scratchpad/` are relative to this repo (kobento-mcu). The
+> rest — `~/code/androidx`, `~/Desktop/.../skia`, `remotecompose-experiments/…`,
+> `RemoteCompose-Examples`, `corpus.jsonl`, `scratchpad/…` — were the author's local checkouts
+> and working files when the study was run (2026-10-24); they are not part of this repo and are
+> recorded here only for provenance.
+
 | Component | What I read |
 |---|---|
-| Backend | `esp32-rc/components/kobentovg/src/ThorvgPaintContext.cpp` (all 1,348 lines) and its header |
+| Backend | `components/kobentovg/src/ThorvgPaintContext.cpp` (all 1,348 lines) and its header |
 | Engine interface | `remotecompose-experiments/players/cpp/lib/rccore/include/rccore/PaintContext.h`, `PaintBundle.h` |
 | Skia backend | `players/cpp/lib/rcskia/src/SkiaPaintContext.cpp` (1,959 lines) |
 | Java reference | `~/code/androidx/compose/remote/remote-core/.../PaintContext.java` and `remote-player-core/.../AndroidPaintContext.java` (androidx commit 9a589fa6, 2026-10-16) |
-| Repo docs | `esp32-rc/AGENTS.md` (section "The ThorVG backend against Skia") and `esp32-rc/third_party/README.md` |
-| ThorVG | Vendored v1.0.7 in `esp32-rc/third_party/thorvg` (one local patch, in `SfntLoader::metrics`). Upstream main was shallow-cloned into `scratchpad/upstream/thorvg-main`. |
+| Repo docs | `AGENTS.md` (section "The ThorVG backend against Skia") and `third_party/README.md` |
+| ThorVG | Vendored v1.0.7 in `third_party/thorvg` (one local patch, in `SfntLoader::metrics`). Upstream main was shallow-cloned into `scratchpad/upstream/thorvg-main`. |
 | Skia | Local checkout `~/Desktop/antigravity/rcSkia/skia` (commit 8328d3b2e4, 2025-11-28) and the built `remotecompose-experiments/players/cpp/build/_deps/skia-src/out/Release-arm64/libskia.a` |
 
 **Feature frequency (measured, not inferred)**
 
 1. The catalog's `apis` field is too coarse (for example `paint`, `text`). So I built `scratchpad/rcstats`: a subclass of `ThorvgPaintContext` that records every PaintContext call and decodes every PaintBundle tag. That covers gradient type and tile mode, blend mode, colour filter, path effect type, typeface weight and type, font axes, texture, shader, stroke cap, join and hairline, inverse winding, non-uniform or mirrored scales, and every non-ASCII codepoint drawn.
 2. It was built in the scratchpad against the same rccore, kobentovg and ThorVG sources. I ran it over all 1,311 documents in `corpus.jsonl` (downloaded) using the local `~/code/github/RemoteCompose-Examples` `.rc` files: one 400x400 layout, light theme, clock fixed at 1.5 s, two frames. 1,309 rendered and 2 crashed.
-3. I ran the same tool over the 109 device documents in `esp32-rc/documents`.
+3. I ran the same tool over the 109 device documents in `documents`.
 4. Missing glyphs were found by parsing Roboto-Regular's `cmap` (formats 4 and 12) and checking every drawn codepoint against it.
 5. Raw results: `scratchpad/feature_usage.json`, `feature_counts.txt`, `esp_feature_usage.json`.
 6. **Caveat: these are lower bounds.** Features behind conditionals, touch, later animation times or other themes are undercounted.
 
 **Sizes**
 
-- **Linked size per object:** I parsed the GNU ld maps with `scratchpad/scripts/mapsize.py` (sums `.text`, `.rodata`, `.data` and `.literal` per input object, skipping debug sections). Maps used: `stm32u5-rc/build/rcplayer.map` (Cortex-M33, -O3) and `esp32-rc/firmware/rcplayer/build/{m5stack_tab5,waveshare_s3_lcd128}/rcplayer.map` (-O2).
+- **Linked size per object:** I parsed the GNU ld maps with `scratchpad/scripts/mapsize.py` (sums `.text`, `.rodata`, `.data` and `.literal` per input object, skipping debug sections). Maps used: `stm32/build/rcplayer.map` (Cortex-M33, -O3) and `esp32/firmware/rcplayer/build/{m5stack_tab5,waveshare_s3_lcd128}/rcplayer.map` (-O2).
 - **Bytes-per-LOC calibration:** I compiled ThorVG SW-engine files from both v1.0.7 and main with `arm-none-eabi-g++` 15.2 (`-mcpu=cortex-m33 -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -ffunction-sections`) at -Os and -O2, then ran `arm-none-eabi-size`.
 - **LOC** means non-blank, non-comment lines.
 
@@ -188,7 +194,7 @@ Legend:
 
 ### 3.6 Device-document check
 
-The same tool run over `esp32-rc/documents` (109 docs) found:
+The same tool run over `documents` (109 docs) found:
 
 - **Used:** sweep 2, linear gradient 2, no missing glyphs, clipPath 1, no blend or colour-filter modes, no textures.
 - **Interpretation:** the device documents were authored around the current gaps, so they understate demand.

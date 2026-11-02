@@ -49,7 +49,7 @@ document changed things, or when the change didn't come from a tap at all.
 
 A slow action sets a flag while it runs (`system.wifi_scanning`), and the document swaps
 the button's label ("Scan" → "···"). It also puts a status line in one string variable
-(`system.wifi_status`: "Connecting to NIXIOT…", "Couldn't join MUSE4IOT"). The player owns
+(`system.wifi_status`: "Connecting to HomeWiFi…", "Couldn't join GuestNet"). The player owns
 the wording, so it can explain a failure without the document knowing every case.
 
 ## 4. Lists: fixed rows, and the tap names the row
