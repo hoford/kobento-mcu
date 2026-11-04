@@ -2,7 +2,10 @@
   ******************************************************************************
   * @file    aps512xx_conf.h
   * @author  MCD Application Team
-  * @brief   APS512XX 16bits-OSPI PSRAM memory configuration file.
+  * @brief   APS512XX 16bits-OSPI PSRAM memory configuration template file.
+  *          This file should be copied to the application folder and renamed
+  *          to aps512xx_conf.h
+  * Made for Kobento from ST's BSD-3-Clause template in STM32CubeU5 (settings only); see LICENSE.md.
   ******************************************************************************
   * @attention
   *
@@ -11,7 +14,7 @@
   *
   * This software is licensed under terms that can be found in the LICENSE file
   * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS. 
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -21,7 +24,7 @@
 #define APS512XX_CONF_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/

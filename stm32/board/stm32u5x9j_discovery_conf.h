@@ -3,10 +3,13 @@
   * @file    stm32u5x9j_discovery_conf.h
   * @author  MCD Application Team
   * @brief   STM32U5x9J_DISCOVERY board configuration file.
+  *          This file should be copied to the application folder and renamed
+  *          to stm32u5x9j_discovery_conf.h .
+  * Made for Kobento from ST's BSD-3-Clause template in STM32CubeU5 (settings only); see LICENSE.md.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,10 +30,27 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32u5xx_hal.h"
 
-/* Usage of STM32U5x9J_DISCOVERY board */
-#define USE_STM32U5x9J_DISCOVERY      1U
+/** @addtogroup BSP
+  * @{
+  */
 
-  /* COM define */
+/** @addtogroup STM32U5x9J_DISCOVERY
+  * @{
+  */
+
+/** @defgroup STM32U5x9J_DISCOVERY_CONFIG Config
+  * @{
+  */
+
+/** @defgroup STM32U5x9J_DISCOVERY_CONFIG_Exported_Constants Exported Constants
+  * @{
+  */
+
+
+/* Usage of STM32U5x9J_DISCOVERY board */
+#define USE_STM32U5x9J_DISCOVERY          1U
+
+/* COM define */
 #define USE_BSP_COM_FEATURE                  1U
 #define USE_COM_LOG                          1U
 
@@ -42,30 +62,40 @@ extern "C" {
 #define BSP_BUTTON_USER_IT_PRIORITY          0x0FUL  /* Default is lowest priority level */
 
 /* LCD interrupt priorities */
-#define BSP_LCD_GFXMMU_IT_PRIORITY 0x0FUL  /* Default is lowest priority level */
-#define BSP_LCD_LTDC_IT_PRIORITY   0x0FUL  /* Default is lowest priority level */
-#define BSP_LCD_DSI_IT_PRIORITY    0x0FUL  /* Default is lowest priority level */
-#define BSP_LCD_DMA2D_IT_PRIORITY  0x0FUL  /* Default is lowest priority level */
+#define BSP_LCD_GFXMMU_IT_PRIORITY       0x0FUL  /* Default is lowest priority level */
+#define BSP_LCD_LTDC_IT_PRIORITY         0x0FUL  /* Default is lowest priority level */
+#define BSP_LCD_DSI_IT_PRIORITY          0x0FUL  /* Default is lowest priority level */
+#define BSP_LCD_DMA2D_IT_PRIORITY        0x0FUL  /* Default is lowest priority level */
 
 /* HSPI RAM interrupt priority */
-#define BSP_HSPI_RAM_IT_PRIORITY     0x0FUL  /* Default is lowest priority level */
-#define BSP_HSPI_RAM_DMA_IT_PRIORITY 0x0FUL  /* Default is lowest priority level */
+#define BSP_HSPI_RAM_IT_PRIORITY         0x0FUL  /* Default is lowest priority level */
+#define BSP_HSPI_RAM_DMA_IT_PRIORITY     0x0FUL  /* Default is lowest priority level */
 
-/* Touch screen interrupt priority */
-#define BSP_TS_IT_PRIORITY            0x15UL  /* Default is lowest priority level */
+#define BSP_TS_IT_PRIORITY               0x15UL
+#define BSP_SD_IT_PRIORITY               0x15UL
+#define BSP_SD_RX_IT_PRIORITY            0x14UL
+#define BSP_SD_TX_IT_PRIORITY            0x15UL
+#define BSP_SRAM_DMA_IT_PRIORITY         0x15UL
 
-/* SD card interrupt priority */
-#define BSP_SD_IT_PRIORITY            0x15UL  /* Default is lowest priority level */
-#define BSP_SD_RX_IT_PRIORITY         0x14UL  /* Default is lowest priority level */
-#define BSP_SD_TX_IT_PRIORITY         0x15UL  /* Default is lowest priority level */
+/**
+  * @}
+  */
 
-/* SRAM DMA interrupt priority */
-#define BSP_SRAM_DMA_IT_PRIORITY      0x15UL  /* Default is lowest priority level */
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* STM32U5x9J_DISCOVERY_CONF_H */
-
 

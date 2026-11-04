@@ -4,6 +4,7 @@
   * @author  MCD Application Team
   * @brief   This file contains specific configuration for the
   *          sitronix.c that can be modified by user.
+  * Made for Kobento from ST's BSD-3-Clause template in STM32CubeU5 (settings only); see LICENSE.md.
   ******************************************************************************
   * @attention
   *
@@ -31,9 +32,8 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 #define SITRONIX_MAX_X_LENGTH                  480U
 #define SITRONIX_MAX_Y_LENGTH                  480U
-  
+
 #ifdef __cplusplus
 }
 #endif
 #endif /* SITRONIX_CONF_H */
-

@@ -31,7 +31,7 @@ components/          the library, shared by every target
   rcstage/           one RC document live on a screen: player task, touch, variables, device state
 third_party/thorvg/  the vendored ThorVG fork (branded KobentoVG). See PROVENANCE.md
 documents/           sample .rc documents the players embed. See PROVENANCE.md
-assets/fonts/        Roboto and Roboto Mono (Apache 2.0)
+assets/fonts/        Roboto (Apache 2.0) and Roboto Mono (SIL OFL 1.1)
 docs/                RC conventions (system variables, action patterns, the RcVG study)
 tools/               the json2rc compiler, the logo generator, device scripts, conformance sweeps
 brand/               Kobento brand identity + logo assets. See BRAND.md
@@ -66,7 +66,12 @@ build/flash/test, the architecture and the known traps.
 
 ## Relationship to RemoteCompose
 
-Kobento is a clean-room *implementation brand*, not a fork of the name. The on-the-wire format,
+Kobento is an *implementation brand*, not a fork of the name. The on-the-wire format,
 the opcodes and the `.rc` extension remain **RemoteCompose** — the spec Kobento conforms to.
 Where a document, an engine, or a tool is derived from upstream RemoteCompose or Android
 sources, [PROVENANCE.md](PROVENANCE.md) records it.
+
+## License
+
+Apache License 2.0: see [LICENSE](LICENSE). Third-party code keeps its own licence. Credits and details are in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

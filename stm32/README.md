@@ -95,3 +95,8 @@ ThorVG's raster is the cost. Next steps:
   700 KB).
 - Render the dirty region only.
 - Look at the NeoChrom GPU2D, if its programming model is open.
+
+## Licences
+
+Four configuration files in `board/` are ST's, under BSD-3-Clause, and two come from CMSIS
+Device, under Apache-2.0: see [board/LICENSE.md](board/LICENSE.md).

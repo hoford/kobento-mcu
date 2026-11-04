@@ -7,4 +7,5 @@ and managed dependencies can't be excluded. This player renders with ThorVG and 
 Changes from upstream:
 - removed `src/bsp_camera.c`, `src/bsp_usb.c` and the esp_lvgl_port / esp_video / usb deps
 - `BSP_CONFIG_NO_GRAPHIC_LIB=1` set publicly in CMakeLists.txt
+- `idf_component.yml` edited to match, and a link in `README.md` changed
 Display (all three panel revisions), touch, I2C, IO expanders, audio, IMU, SD are unchanged.

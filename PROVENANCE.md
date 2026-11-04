@@ -42,4 +42,9 @@ updated accordingly.
 
 ## Fonts — `assets/fonts`
 
-Roboto and Roboto Mono, Apache License 2.0.
+Roboto (v2.138, Apache License 2.0) and Roboto Mono (v3.001, SIL Open Font License 1.1, in
+`assets/fonts/OFL-RobotoMono.txt`).
+
+## Licences
+
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for every third-party licence and credit.

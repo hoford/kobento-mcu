@@ -2,7 +2,10 @@
   ******************************************************************************
   * @file    stm32u5xx_hal_conf.h
   * @author  MCD Application Team
-  * @brief   HAL configuration file.
+  * @brief   HAL configuration template file.
+  *          This file should be copied to the application folder and renamed
+  *          to stm32u5xx_hal_conf.h.
+  * Made for Kobento from ST's BSD-3-Clause template in STM32CubeU5 (settings only); see LICENSE.md.
   ******************************************************************************
   * @attention
   *
@@ -49,6 +52,7 @@ extern "C" {
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_FMAC_MODULE_ENABLED
 #define HAL_GFXMMU_MODULE_ENABLED
+/* #define HAL_GFXTIM_MODULE_ENABLED */
 #define HAL_GPIO_MODULE_ENABLED
 #define HAL_GPU2D_MODULE_ENABLED
 #define HAL_GTZC_MODULE_ENABLED
@@ -58,6 +62,7 @@ extern "C" {
 #define HAL_ICACHE_MODULE_ENABLED
 #define HAL_IRDA_MODULE_ENABLED
 #define HAL_IWDG_MODULE_ENABLED
+/* #define HAL_JPEG_MODULE_ENABLED */
 #define HAL_LPTIM_MODULE_ENABLED
 #define HAL_LTDC_MODULE_ENABLED
 #define HAL_MDF_MODULE_ENABLED
@@ -77,6 +82,7 @@ extern "C" {
 #define HAL_RTC_MODULE_ENABLED
 #define HAL_SAI_MODULE_ENABLED
 #define HAL_SD_MODULE_ENABLED
+/* #define HAL_SDIO_MODULE_ENABLED */
 #define HAL_SMARTCARD_MODULE_ENABLED
 #define HAL_SMBUS_MODULE_ENABLED
 #define HAL_SPI_MODULE_ENABLED
@@ -140,7 +146,7 @@ extern "C" {
 vary depending on the variations in voltage and temperature.*/
 
 #if !defined  (LSI_STARTUP_TIMEOUT)
-#define LSI_STARTUP_TIMEOUT    130UL      /*!< Time out for LSI start up, in ms */
+#define LSI_STARTUP_TIMEOUT    130UL      /*!< Time out for LSI start up, in us */
 #endif /* LSI_STARTUP_TIMEOUT */
 
 /**
@@ -219,6 +225,7 @@ vary depending on the variations in voltage and temperature.*/
 #define  USE_HAL_NAND_REGISTER_CALLBACKS       0U /* NAND register callback disabled      */
 #define  USE_HAL_NOR_REGISTER_CALLBACKS        0U /* NOR register callback disabled       */
 #define  USE_HAL_OPAMP_REGISTER_CALLBACKS      0U /* MDIO register callback disabled      */
+#define  USE_HAL_OSPI_REGISTER_CALLBACKS       0U /* OCTOSPI register callback disabled   */
 #define  USE_HAL_OTFDEC_REGISTER_CALLBACKS     0U /* OTFDEC register callback disabled    */
 #define  USE_HAL_PCD_REGISTER_CALLBACKS        0U /* PCD register callback disabled       */
 #define  USE_HAL_PKA_REGISTER_CALLBACKS        0U /* PKA register callback disabled       */
@@ -227,6 +234,7 @@ vary depending on the variations in voltage and temperature.*/
 #define  USE_HAL_RTC_REGISTER_CALLBACKS        0U /* RTC register callback disabled       */
 #define  USE_HAL_SAI_REGISTER_CALLBACKS        0U /* SAI register callback disabled       */
 #define  USE_HAL_SD_REGISTER_CALLBACKS         0U /* SD register callback disabled        */
+#define  USE_HAL_SDIO_REGISTER_CALLBACKS       0U /* SDIO register callback disabled      */
 #define  USE_HAL_SDRAM_REGISTER_CALLBACKS      0U /* SDRAM register callback disabled     */
 #define  USE_HAL_SMARTCARD_REGISTER_CALLBACKS  0U /* SMARTCARD register callback disabled */
 #define  USE_HAL_SMBUS_REGISTER_CALLBACKS      0U /* SMBUS register callback disabled     */
@@ -248,9 +256,11 @@ vary depending on the variations in voltage and temperature.*/
 #define USE_SPI_CRC                   1U
 
 /* ################## SDMMC peripheral configuration ######################### */
-
 #define USE_SD_TRANSCEIVER            0U
 
+/* ################## SDIO peripheral configuration ########################## */
+#define USE_SDIO_TRANSCEIVER          0U
+#define SDIO_MAX_IO_NUMBER            7U /*!< SDIO device support maximum IO number */
 
 /* Includes ------------------------------------------------------------------*/
 /**
@@ -325,6 +335,10 @@ vary depending on the variations in voltage and temperature.*/
 #include "stm32u5xx_hal_gfxmmu.h"
 #endif /* HAL_GFXMMU_MODULE_ENABLED */
 
+#ifdef HAL_GFXTIM_MODULE_ENABLED
+#include "stm32u5xx_hal_gfxtim.h"
+#endif /* HAL_GFXTIM_MODULE_ENABLED */
+
 #ifdef HAL_HASH_MODULE_ENABLED
 #include "stm32u5xx_hal_hash.h"
 #endif /* HAL_HASH_MODULE_ENABLED */
@@ -392,6 +406,10 @@ vary depending on the variations in voltage and temperature.*/
 #ifdef HAL_SD_MODULE_ENABLED
 #include "stm32u5xx_hal_sd.h"
 #endif /* HAL_SD_MODULE_ENABLED */
+
+#ifdef HAL_SDIO_MODULE_ENABLED
+#include "stm32u5xx_hal_sdio.h"
+#endif /* HAL_SDIO_MODULE_ENABLED */
 
 #ifdef HAL_SMBUS_MODULE_ENABLED
 #include "stm32u5xx_hal_smbus.h"

@@ -1,3 +1,4 @@
+/* Modified for Kobento from CMSIS Device: VECT_TAB_OFFSET is always defined here. */
 /**
   ******************************************************************************
   * @file    system_stm32u5xx.c
