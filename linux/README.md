@@ -41,15 +41,32 @@ linux/build/rcplayer documents                 # a window on the desktop
 linux/build/rcplayer path/to/examples          # scans recursively; fit/ and 3d/ laid out to fit
 linux/build/rcplayer ~/examples --pi            # fullscreen kiosk, tuned for the Pi Zero
 linux/build/rcplayer ~/examples --auto 7        # auto-advance every 7s (a slideshow)
+linux/build/rcplayer ~/examples --square --list # a square player with the document list beside it
 linux/build/rcplayer documents --once           # render the first doc to rcplayer-once.png, exit
 ```
 
-Options (full list in `src/main.cpp`): `--size W H`, `--fullscreen`, `--pi`, `--render-scale N`,
+Options (full list in `src/main.cpp`): `--size W H`, `--fullscreen`, `--pi`, `--square`, `--list`,
+`--render-scale N`,
 `--auto SEC`, `--density D`, `--theme light|dark`, `--round`, `--eink`, `--board NAME`,
 `--named NAME=VALUE`, `--start NAME`, `--fps N`, `--headless`.
 
 If SDL2 can't open a window (no desktop session), it falls back to **headless** — every feature
 works and `snap` writes the current frame to a PNG (how it is smoke-tested in CI).
+
+### Square player and document list
+
+`--square` keeps the player square: the largest square that fits, centred on black. `--list` puts
+a scrolling list of the documents on the right and pushes the player to the left: tap a row to open
+it, drag or use the wheel to scroll, and the current document stays highlighted. Together they give
+a square player at the left and a list in all the width that's left. In a window, `--size` is the
+player's size, and the list widens the window. With `--list`, `snap` writes the whole window.
+
+### Starting on boot
+
+`scripts/kobento-kiosk.desktop` starts `scripts/kobento-kiosk.sh` when the desktop session logs in.
+Edit the paths in its `Exec`, then copy it to `~/.config/autostart/`; the Pi must auto-login to the
+desktop. A crash restarts the player, while `Q`/`Esc` and `pkill rcplayer` stop it until the next
+boot. The log is `~/kiosk.log`.
 
 ### Fullscreen and Pi performance
 

@@ -38,7 +38,8 @@ find_package(SDL2 QUIET)
 add_executable(rcplayer
     src/main.cpp
     src/player.cpp
-    src/display.cpp)
+    src/display.cpp
+    src/docpanel.cpp)
 target_link_libraries(rcplayer PRIVATE kobentovg ZLIB::ZLIB Threads::Threads)
 target_compile_definitions(rcplayer PRIVATE
     FONT_DIR="${CMAKE_CURRENT_LIST_DIR}/../assets/fonts")

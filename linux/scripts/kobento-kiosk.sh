@@ -24,4 +24,12 @@ shift 2>/dev/null || true
 
 # stdin from /dev/null: the console is unavailable (fine for kiosk), and EOF no longer triggers a
 # quit, so the window keys / touch / --auto drive the player until it is closed.
-exec "$BIN" "$DOCS" --pi "$@" </dev/null
+# A crash restarts the player. Q/Esc (exit 0) and `pkill rcplayer` (SIGTERM, 143) stop it.
+[ -t 1 ] || exec >"$HOME/kiosk.log" 2>&1   # from autostart or nohup: keep the banner and errors
+while true; do
+    rc=0
+    stdbuf -oL -eL "$BIN" "$DOCS" --pi "$@" </dev/null || rc=$?
+    case "$rc" in 0|143) exit 0 ;; esac
+    echo "rcplayer exited with $rc; restarting" >&2
+    sleep 3
+done

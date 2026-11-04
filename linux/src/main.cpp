@@ -15,6 +15,10 @@
 //   --pi              Raspberry Pi preset: fullscreen + render-scale 2 + GPU upscale (nearest).
 //                     Rasterizes at half resolution and lets the GPU scale up — the big win on
 //                     the Pi Zero, where ThorVG's CPU raster is the bottleneck.
+//   --square          force the player square: the largest square that fits, centred on black
+//   --list            a list of the documents on the right, pushing the player to the left; tap a
+//                     row to open it, drag or wheel to scroll. With --square the list takes all
+//                     the width the square leaves.
 //   --render-scale N  rasterize at 1/N of the window and GPU-upscale (N 1..8, default 1; 2 on --pi)
 //   --headless        no window; drive with `snap` (CI / no desktop session)
 //   --density D       dp -> px for window-size layout (default 1.0)
@@ -32,6 +36,7 @@
 // Console (stdin): list · next · prev · doc N · stats · bench [N] · act NAME[=VALUE] ·
 //                  named [PREFIX] · snap [FILE] · res DIV · help · quit
 #include "display.hpp"
+#include "docpanel.hpp"
 #include "player.hpp"
 
 #include "kobentovg/ThorvgPaintContext.h"
@@ -39,6 +44,7 @@
 #include <thorvg.h>
 
 #include <algorithm>
+#include <cmath>
 #include <condition_variable>
 #include <cstdio>
 #include <cstring>
@@ -58,10 +64,11 @@ using kobento::Player;
 using kobento::Input;
 using kobento::Event;
 using kobento::Phase;
+using kobento::Rect;
 
 // ── Documents ──────────────────────────────────────────────────────────────────────────────
 
-struct Doc { std::string name; std::string path; bool fit; };
+struct Doc { std::string name; std::string path; bool fit; std::string label; };
 static std::vector<Doc> gDocs;
 
 static std::vector<uint8_t> readFile(const std::string& path) {
@@ -72,7 +79,7 @@ static std::vector<uint8_t> readFile(const std::string& path) {
 static std::string stem(const fs::path& p) { return p.stem().string(); }
 
 static void addFile(const fs::path& p, bool fit) {
-    if (p.extension() == ".rc") gDocs.push_back({stem(p), p.string(), fit});
+    if (p.extension() == ".rc") gDocs.push_back({stem(p), p.string(), fit, stem(p)});
 }
 
 // Scan a directory the way the ESP32 build embeds it: *.rc at the top lay out at window size,
@@ -85,10 +92,12 @@ static void addDir(const fs::path& dir) {
         bool fit = false;
         for (const auto& part : e.path().lexically_relative(dir))
             if (part == "fit" || part == "3d") { fit = true; break; }
-        gDocs.push_back({stem(e.path()), e.path().string(), fit});
+        fs::path label = e.path().lexically_relative(dir);
+        gDocs.push_back({stem(e.path()), e.path().string(), fit, label.replace_extension().string()});
     }
+    // By label, so a folder's documents stay together.
     std::sort(gDocs.begin(), gDocs.end(),
-              [](const Doc& a, const Doc& b) { return a.name < b.name; });
+              [](const Doc& a, const Doc& b) { return a.label < b.label; });
 }
 
 // ── Variant selection (ported from esp32/firmware/rcplayer) ─────────────────────────────────
@@ -148,6 +157,29 @@ static int gBacklight = 100;
 static bool gDirty = true;        // a frame is owed (nav/reload/resize)
 static int gRenderScale = 1;      // rasterize at 1/gRenderScale of the window, GPU-upscale
 static int64_t gLastSwitchMs = 0; // when the current document was opened (for --auto)
+static bool gSquare = false;      // --square
+static std::unique_ptr<kobento::DocPanel> gPanel;   // --list
+static bool gPanelDirty = false;  // the list changed and needs drawing
+
+// Where the player and the list sit in the window.
+struct Layout { Rect player, panel; };
+static Layout gLayout;
+static constexpr int kListW = 280;   // window points
+
+static Layout computeLayout(int w, int h, float ratio) {
+    Layout l;
+    const int listW = gPanel ? std::min((int) (kListW * ratio), w / 2) : 0;
+    const int availW = w - listW;
+    if (gSquare) {
+        const int side = std::max(1, std::min(availW, h));
+        l.player = {gPanel ? 0 : (w - side) / 2, (h - side) / 2, side, side};
+        l.panel = {side, 0, w - side, h};
+    } else {
+        l.player = {0, 0, availW, h};
+        l.panel = {availW, 0, listW, h};
+    }
+    return l;
+}
 
 static int64_t nowMs();   // defined below
 
@@ -168,6 +200,7 @@ static void open(int i, int step = 0) {
             gDirty = true;
             gLastSwitchMs = nowMs();
             updateTitle();
+            if (gPanel) { gPanel->setCurrent(at); gPanelDirty = true; }
             return;
         }
         fprintf(stderr, "skip %s (load failed)\n", d.name.c_str());
@@ -200,9 +233,28 @@ static void printHelp() {
            "         named [PREFIX] | snap [FILE] | res DIV | help | quit\n");
 }
 
+// The whole window, for a snap with the list showing.
+static bool snapWindow(const std::string& path) {
+    const int w = gDisp->width(), h = gDisp->height();
+    std::vector<uint32_t> px((size_t) w * h, 0xFF000000u);
+    const Rect& d = gLayout.player;
+    const uint32_t* src = gPlayer->pixels();
+    for (int y = 0; y < d.h && d.y + y < h; y++)
+        for (int x = 0; x < d.w && d.x + x < w; x++)
+            px[(size_t) (d.y + y) * w + d.x + x] =
+                src[(size_t) (y * gPlayer->renderH() / d.h) * gPlayer->renderW() + x * gPlayer->renderW() / d.w];
+    const Rect& r = gLayout.panel;
+    gPanel->draw();
+    for (int y = 0; y < gPanel->height() && r.y + y < h; y++)
+        std::copy_n(gPanel->pixels() + (size_t) y * gPanel->width(), std::min(gPanel->width(), w - r.x),
+                    px.begin() + (size_t) (r.y + y) * w + r.x);
+    return kobento::writePng(path, px.data(), w, h);
+}
+
 static void snap(const std::string& arg) {
     std::string path = arg.empty() ? ("rcplayer-" + gPlayer->name() + ".png") : arg;
-    printf(gPlayer->snap(path) ? "wrote %s\n" : "snap failed: %s\n", path.c_str());
+    const bool ok = gPanel ? snapWindow(path) : gPlayer->snap(path);
+    printf(ok ? "wrote %s\n" : "snap failed: %s\n", path.c_str());
 }
 
 // One console line. Returns false to quit.
@@ -224,7 +276,7 @@ static bool handle(const std::string& line) {
     else if (cmd == "doc") open(atoi(arg.c_str()));
     else if (cmd == "stats") gPlayer->printStats();
     else if (cmd == "bench") gPlayer->bench(arg.empty() ? 30 : atoi(arg.c_str()));
-    else if (cmd == "res") { gPlayer->setRenderDiv(atoi(arg.c_str()), gDisp->width(), gDisp->height());
+    else if (cmd == "res") { gPlayer->setRenderDiv(atoi(arg.c_str()), gLayout.player.w, gLayout.player.h);
                              gDirty = true; printf("render %dx%d\n", gPlayer->renderW(), gPlayer->renderH()); }
     else if (cmd == "act") {
         size_t eq = arg.find('=');
@@ -256,7 +308,7 @@ static int64_t nowMs() {
 
 int main(int argc, char** argv) {
     std::string board = "Raspberry Pi", startName = "kobento_splash", title = "Kobento RC player";
-    bool headless = false, round = false, eink = false, once = false, fullscreen = false, pi = false;
+    bool headless = false, round = false, eink = false, once = false, fullscreen = false, pi = false, list = false;
     int sizeW = 600, sizeH = 600, theme = -3, fps = 30, renderScale = 1;
     float density = 1.0f, autoSec = 0;
     std::vector<std::pair<std::string, std::string>> named;
@@ -268,6 +320,8 @@ int main(int argc, char** argv) {
         if (a == "--size") { sizeW = atoi(next("600")); sizeH = atoi(next("600")); }
         else if (a == "--fullscreen") fullscreen = true;
         else if (a == "--pi") pi = true;
+        else if (a == "--square") gSquare = true;
+        else if (a == "--list") list = true;
         else if (a == "--render-scale") renderScale = std::max(1, std::min(8, atoi(next("1"))));
         else if (a == "--headless") headless = true;
         else if (a == "--density") density = (float) atof(next("1"));
@@ -308,6 +362,8 @@ int main(int argc, char** argv) {
         if (renderScale == 1) renderScale = 2;
     }
     gRenderScale = renderScale;
+    if (gSquare) sizeW = sizeH = std::min(sizeW, sizeH);
+    if (list) sizeW += kListW;   // --size is the player's size: the list widens the window
 
     tvg::Initializer::init(0);
     using Face = kobentovg::ThorvgPaintContext::Face;
@@ -321,6 +377,7 @@ int main(int argc, char** argv) {
         opt.w = sizeW; opt.h = sizeH; opt.title = title;
         opt.fullscreen = fullscreen;
         opt.linearFilter = !pi;              // nearest upscale under --pi for speed
+        opt.keepCursor = list;
         disp = kobento::openWindow(opt);
     }
     if (!disp) {
@@ -332,7 +389,14 @@ int main(int argc, char** argv) {
     // The window may differ from the requested size (fullscreen = desktop size). Rasterize at
     // 1/renderScale of the drawable and let present() upscale.
     const int winW = disp->width(), winH = disp->height();
-    const int rw = std::max(1, winW / gRenderScale), rh = std::max(1, winH / gRenderScale);
+    if (list) {
+        std::vector<std::string> rows;
+        for (const Doc& d : gDocs) rows.push_back(d.label);
+        gPanel = std::make_unique<kobento::DocPanel>(std::move(rows), disp->pixelRatio());
+    }
+    gLayout = computeLayout(winW, winH, disp->pixelRatio());
+    if (gPanel) gPanel->resize(gLayout.panel.w, gLayout.panel.h);
+    const int rw = std::max(1, gLayout.player.w / gRenderScale), rh = std::max(1, gLayout.player.h / gRenderScale);
     printf("Kobento RC player · %s · window %dx%d · render %dx%d%s · %d documents\n",
            disp->name(), winW, winH, rw, rh,
            gRenderScale > 1 ? (" (1/" + std::to_string(gRenderScale) + ")").c_str() : "",
@@ -343,6 +407,7 @@ int main(int argc, char** argv) {
 
     Player player(rw, rh, density, theme);
     gPlayer = &player;
+    player.setRenderDiv(gRenderScale, gLayout.player.w, gLayout.player.h);
     player.setNamed("system.board", board);
     if (eink) player.setNamed("system.screen_eink", "1");
     if (round) player.setNamed("system.screen_round", "1");
@@ -355,11 +420,12 @@ int main(int argc, char** argv) {
     const Doc& d0 = gDocs[gCurrent];
     if (!player.load(readFile(d0.path), d0.name, d0.fit)) open(gCurrent);
     updateTitle();
+    if (gPanel) { gPanel->setCurrent(gCurrent); gPanelDirty = true; }
 
     if (once) {
         player.renderFrame();
-        const char* out = "rcplayer-once.png";
-        printf(player.snap(out) ? "wrote %s\n" : "snap failed: %s\n", out);
+        snap("rcplayer-once.png");
+        gPanel.reset();
         tvg::Initializer::term();
         return 0;
     }
@@ -378,8 +444,15 @@ int main(int argc, char** argv) {
     float ptPrevX = 0, ptPrevY = 0, ptCurX = 0, ptCurY = 0;
     int64_t ptPrevT = 0, ptCurT = 0;
     // Window px -> render-buffer px (they differ when rasterizing below window size, --render-scale).
-    auto bufX = [&](float x) { return x * (float) player.renderW() / std::max(1, disp->width()); };
-    auto bufY = [&](float y) { return y * (float) player.renderH() / std::max(1, disp->height()); };
+    auto bufX = [&](float x) { return (x - gLayout.player.x) * (float) player.renderW() / std::max(1, gLayout.player.w); };
+    auto bufY = [&](float y) { return (y - gLayout.player.y) * (float) player.renderH() / std::max(1, gLayout.player.h); };
+    auto inside = [](const Rect& r, float x, float y) {
+        return x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+    };
+    // A gesture belongs to whatever it started on.
+    enum class Owner { None, Doc, List } owner = Owner::None;
+    float listDownY = 0, listLastY = 0;
+    bool listDragged = false;
 
     while (running) {
         // 1. stdin console.
@@ -397,11 +470,14 @@ int main(int argc, char** argv) {
         for (auto& e : events) {
             if (e.kind == Event::Close) running = false;
             else if (e.kind == Event::Resize) {
-                // Rasterize at 1/gRenderScale of the new drawable; present() upscales to fill it.
-                const int tw = std::max(1, e.w / gRenderScale), th = std::max(1, e.h / gRenderScale);
-                if (e.w > 0 && e.h > 0 && (tw != player.renderW() || th != player.renderH())) {
-                    player.setRenderDiv(gRenderScale, e.w, e.h); gDirty = true;
-                }
+                // Rasterize at 1/gRenderScale of the player's rectangle; present() upscales to fill it.
+                if (e.w <= 0 || e.h <= 0) continue;
+                gLayout = computeLayout(e.w, e.h, disp->pixelRatio());
+                const int pw = gLayout.player.w, ph = gLayout.player.h;
+                const int tw = std::max(1, pw / gRenderScale), th = std::max(1, ph / gRenderScale);
+                if (tw != player.renderW() || th != player.renderH()) player.setRenderDiv(gRenderScale, pw, ph);
+                if (gPanel) { gPanel->resize(gLayout.panel.w, gLayout.panel.h); gPanelDirty = true; }
+                gDirty = true;
             } else if (e.kind == Event::Key) {
                 switch (e.key) {
                     case Input::Next: open(gCurrent + 1, 1); break;
@@ -412,8 +488,30 @@ int main(int argc, char** argv) {
                     case Input::Fullscreen: disp->toggleFullscreen(); gDirty = true; break;
                     case Input::Quit: running = false; break;
                 }
+            } else if (e.kind == Event::Scroll) {
+                if (gPanel) { gPanel->scrollBy(-e.scroll * 3 * 26 * disp->pixelRatio()); gPanelDirty = true; }
             } else if (e.kind == Event::Pointer) {
                 const int64_t t = nowMs();
+                if (e.phase == Phase::Down)
+                    owner = gPanel && inside(gLayout.panel, e.px, e.py) ? Owner::List
+                          : inside(gLayout.player, e.px, e.py) ? Owner::Doc : Owner::None;
+                const Owner by = owner;
+                if (e.phase == Phase::Up) owner = Owner::None;
+                if (by == Owner::None) continue;
+                if (by == Owner::List) {
+                    const float slop = 8 * disp->pixelRatio();
+                    if (e.phase == Phase::Down) {
+                        listDownY = listLastY = e.py; listDragged = false;
+                    } else if (e.phase == Phase::Move) {
+                        if (std::abs(e.py - listDownY) > slop) listDragged = true;
+                        if (listDragged) { gPanel->scrollBy(listLastY - e.py); gPanelDirty = true; }
+                        listLastY = e.py;
+                    } else if (!listDragged) {
+                        const int row = gPanel->rowAt(e.py - gLayout.panel.y);
+                        if (row >= 0 && row != gCurrent) open(row);
+                    }
+                    continue;
+                }
                 if (e.phase == Phase::Down) {
                     ptPrevX = ptCurX = e.px; ptPrevY = ptCurY = e.py; ptPrevT = ptCurT = t;
                     player.pointerDown(bufX(e.px), bufY(e.py));
@@ -441,7 +539,6 @@ int main(int argc, char** argv) {
         const bool due = gDirty || (!paused && nextFrameAt != INT64_MAX && t >= nextFrameAt);
         if (due) {
             player.renderFrame();
-            disp->present(player.pixels(), player.renderW(), player.renderH());
             gDirty = false;
             if (paused) {
                 nextFrameAt = INT64_MAX;
@@ -450,12 +547,21 @@ int main(int argc, char** argv) {
                 nextFrameAt = d < 0 ? INT64_MAX : nowMs() + std::max(d, minFrameMs);
             }
         }
+        if (gPanelDirty) {
+            gPanel->draw();
+            disp->setPanel(gPanel->pixels(), gPanel->width(), gPanel->height(), gLayout.panel);
+        }
+        if (due || gPanelDirty) {
+            disp->present(player.pixels(), player.renderW(), player.renderH(), gLayout.player);
+            gPanelDirty = false;
+        }
 
         // 5. wait briefly so the window stays responsive and console input wakes us.
         std::unique_lock<std::mutex> lk(gMx);
         gCv.wait_for(lk, std::chrono::milliseconds(16), [] { return !gQueue.empty(); });
     }
 
+    gPanel.reset();
     tvg::Initializer::term();
     return 0;
 }

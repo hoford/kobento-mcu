@@ -1,7 +1,7 @@
 // Where a rendered frame is shown: a desktop window (SDL2), or nowhere (headless).
 //
 // A frame is premultiplied ARGB8888, `srcW` x `srcH` pixels. The window backend uploads it to a
-// texture and scales it to the current window (on the GPU when an accelerated renderer is
+// texture and scales it to a rectangle of the window (on the GPU when an accelerated renderer is
 // available, else a software blit); it also reports window input — navigation keys, fullscreen
 // toggle, resize, close, and pointer (mouse/touch) events — so the player behaves like the
 // reference rcviewer. On a host without a display (CI, or over SSH with no session), openWindow()
@@ -21,12 +21,16 @@ enum class Input { Next, Prev, Reload, PauseToggle, Snap, Quit, Fullscreen };
 // Pointer (mouse / single-finger touch) phase.
 enum class Phase { Down, Move, Up };
 
+// A rectangle of the window, in drawable px.
+struct Rect { int x = 0, y = 0, w = 0, h = 0; };
+
 struct Event {
-    enum Kind { Key, Resize, Close, Pointer } kind;
+    enum Kind { Key, Resize, Close, Pointer, Scroll } kind;
     Input key = Input::Next;       // Kind::Key
     int w = 0, h = 0;              // Kind::Resize (new drawable size, px)
     Phase phase = Phase::Move;     // Kind::Pointer
     float px = 0, py = 0;          // Kind::Pointer (drawable px, top-left origin)
+    float scroll = 0;              // Kind::Scroll (wheel notches, positive = up)
 };
 
 // How to open the window. Accelerated asks SDL for a GPU renderer (VideoCore on the Pi) with
@@ -38,6 +42,7 @@ struct WindowOptions {
     bool fullscreen = false;       // start borderless-fullscreen on the current desktop
     bool accelerated = true;       // try a GPU renderer first
     bool linearFilter = true;      // false = nearest-neighbour (cheaper upscale)
+    bool keepCursor = false;       // keep the cursor in fullscreen (there's a list to click)
 };
 
 class Display {
@@ -45,7 +50,9 @@ public:
     virtual ~Display() = default;
     virtual int width() const = 0;              // drawable size in px
     virtual int height() const = 0;
-    virtual void present(const uint32_t* argb, int srcW, int srcH) = 0;
+    virtual float pixelRatio() const { return 1; }   // drawable px per window point
+    virtual void present(const uint32_t* argb, int srcW, int srcH, Rect dst) = 0;
+    virtual void setPanel(const uint32_t* argb, int w, int h, Rect dst) {}   // shown by present()
     virtual void poll(std::vector<Event>& out) {}   // window events since last call
     virtual void setTitle(const std::string&) {}
     virtual void toggleFullscreen() {}

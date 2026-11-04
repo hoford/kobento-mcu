@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 
@@ -79,10 +80,12 @@ void Player::layoutAndApply() {
     // Player mode: the document lays out into the surface, in dp. Fit: at its own header size,
     // scaled to sit centred on black.
     const int sw = mRenderW, sh = mRenderH;
+    // Rasterizing at 1/div of the panel must not change the layout, only the pixels per dp.
+    const float density = mDensity / mDiv;
     if (!mFit) {
-        mDpW = (int) (sw / mDensity);
-        mDpH = (int) (sh / mDensity);
-        mScale = mDensity;
+        mDpW = (int) std::lround(sw / density);
+        mDpH = (int) std::lround(sh / density);
+        mScale = density;
         mOx = mOy = 0;
     } else {
         mDpW = mDoc->getWidth() > 0 ? mDoc->getWidth() : kFitDefault;
@@ -97,7 +100,7 @@ void Player::layoutAndApply() {
     mCtx->mHeight = (float) mDpH;
     mCtx->loadFloat(RemoteContext::ID_WINDOW_WIDTH, (float) mDpW);
     mCtx->loadFloat(RemoteContext::ID_WINDOW_HEIGHT, (float) mDpH);
-    mCtx->loadFloat(RemoteContext::ID_DENSITY, mDensity);
+    mCtx->loadFloat(RemoteContext::ID_DENSITY, density);
     mDoc->registerListeners(*mCtx);
     for (auto& [id, v] : mStickySystem) mCtx->loadFloat(id, v);
     mDoc->applyDataOperations(*mCtx, mTheme);

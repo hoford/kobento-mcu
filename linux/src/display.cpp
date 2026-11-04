@@ -64,7 +64,7 @@ public:
     HeadlessDisplay(int w, int h) : mW(w), mH(h) {}
     int width() const override { return mW; }
     int height() const override { return mH; }
-    void present(const uint32_t*, int, int) override {}   // nothing to show; use `snap`
+    void present(const uint32_t*, int, int, Rect) override {}   // nothing to show; use `snap`
     const char* name() const override { return "headless"; }
 private:
     int mW, mH;
@@ -82,6 +82,7 @@ class SdlDisplay : public Display {
 public:
     ~SdlDisplay() override {
         if (mTex) SDL_DestroyTexture(mTex);
+        if (mPanelTex) SDL_DestroyTexture(mPanelTex);
         if (mRen) SDL_DestroyRenderer(mRen);
         if (mWin) SDL_DestroyWindow(mWin);
         SDL_Quit();
@@ -108,6 +109,7 @@ public:
                                 opt.w, opt.h, flags);
         if (!mWin) { fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError()); return false; }
         mFull = opt.fullscreen;
+        mKeepCursor = opt.keepCursor;
 
         // Prefer a GPU renderer (VideoCore on the Pi) with vsync — it uploads the ThorVG frame as
         // a texture and scales it on the GPU, which is the win in fullscreen. Fall back to the
@@ -119,7 +121,7 @@ public:
 
         SDL_GetWindowSizeInPixels(mWin, &mW, &mH);
         SDL_RaiseWindow(mWin);     // kiosk: come to the front (esp. when launched over SSH)
-        if (mFull) SDL_ShowCursor(SDL_DISABLE);
+        if (mFull && !mKeepCursor) SDL_ShowCursor(SDL_DISABLE);
         SDL_RendererInfo ri;
         const char* kind = (SDL_GetRendererInfo(mRen, &ri) == 0 &&
                             (ri.flags & SDL_RENDERER_ACCELERATED)) ? "gpu" : "software";
@@ -132,16 +134,20 @@ public:
     const char* name() const override { return mName.c_str(); }
     void setTitle(const std::string& t) override { if (mWin) SDL_SetWindowTitle(mWin, t.c_str()); }
     bool fullscreen() const override { return mFull; }
+    float pixelRatio() const override {
+        int wpW = 0, wpH = 0; SDL_GetWindowSize(mWin, &wpW, &wpH);
+        return wpW > 0 ? (float) mW / wpW : 1.f;
+    }
 
     void toggleFullscreen() override {
         mFull = !mFull;
         SDL_SetWindowFullscreen(mWin, mFull ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-        SDL_ShowCursor(mFull ? SDL_DISABLE : SDL_ENABLE);
+        SDL_ShowCursor(mFull && !mKeepCursor ? SDL_DISABLE : SDL_ENABLE);
         SDL_RaiseWindow(mWin);
         SDL_GetWindowSizeInPixels(mWin, &mW, &mH);   // a size-changed event also follows
     }
 
-    void present(const uint32_t* argb, int srcW, int srcH) override {
+    void present(const uint32_t* argb, int srcW, int srcH, Rect dst) override {
         if (!mTex || srcW != mTexW || srcH != mTexH) {
             if (mTex) SDL_DestroyTexture(mTex);
             mTex = SDL_CreateTexture(mRen, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
@@ -150,8 +156,20 @@ public:
         }
         SDL_UpdateTexture(mTex, nullptr, argb, srcW * 4);
         SDL_RenderClear(mRen);
-        SDL_RenderCopy(mRen, mTex, nullptr, nullptr);   // scale to fill the window
+        const SDL_Rect d{dst.x, dst.y, dst.w, dst.h};
+        SDL_RenderCopy(mRen, mTex, nullptr, &d);        // scale to fill the player's rectangle
+        if (mPanelTex) SDL_RenderCopy(mRen, mPanelTex, nullptr, &mPanelDst);
         SDL_RenderPresent(mRen);
+    }
+
+    void setPanel(const uint32_t* argb, int w, int h, Rect dst) override {
+        if (!mPanelTex || w != mPanelTexW || h != mPanelTexH) {
+            if (mPanelTex) SDL_DestroyTexture(mPanelTex);
+            mPanelTex = SDL_CreateTexture(mRen, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, w, h);
+            mPanelTexW = w; mPanelTexH = h;
+        }
+        SDL_UpdateTexture(mPanelTex, nullptr, argb, w * 4);
+        mPanelDst = {dst.x, dst.y, dst.w, dst.h};
     }
 
     void poll(std::vector<Event>& out) override {
@@ -191,6 +209,9 @@ public:
             } else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT) {
                 mDown = false;
                 out.push_back(pointer(Phase::Up, e.button.x * rx, e.button.y * ry));
+            } else if (e.type == SDL_MOUSEWHEEL) {
+                Event ev{Event::Scroll}; ev.scroll = e.wheel.preciseY;
+                out.push_back(ev);
             } else if (e.type == SDL_FINGERDOWN) {
                 out.push_back(pointer(Phase::Down, e.tfinger.x * mW, e.tfinger.y * mH));
             } else if (e.type == SDL_FINGERMOTION) {
@@ -209,8 +230,10 @@ private:
     SDL_Window* mWin = nullptr;
     SDL_Renderer* mRen = nullptr;
     SDL_Texture* mTex = nullptr;
-    int mW = 0, mH = 0, mTexW = 0, mTexH = 0;
-    bool mFull = false, mDown = false;
+    SDL_Texture* mPanelTex = nullptr;
+    SDL_Rect mPanelDst{};
+    int mW = 0, mH = 0, mTexW = 0, mTexH = 0, mPanelTexW = 0, mPanelTexH = 0;
+    bool mFull = false, mDown = false, mKeepCursor = false;
     std::string mName;
 };
 

@@ -1,0 +1,8 @@
+# Starts the kiosk when the desktop session logs in (the Pi autologins to labwc). Install:
+#   cp kobento-kiosk.desktop ~/.config/autostart/      and edit the paths in Exec for your user
+# Stop it for good by deleting that copy.
+[Desktop Entry]
+Type=Application
+Name=Kobento RC player
+Exec=/home/john/kobento/kobento-mcu/linux/scripts/kobento-kiosk.sh /home/john/rc-examples --square --auto 8
+X-GNOME-Autostart-enabled=true
